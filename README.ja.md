@@ -46,3 +46,14 @@ go run ./cmd/syncdocs -goesm ../goesm -gosfc third_party/gosfc
 ```
 
 CI は同じものを `-check` 付きで実行します。
+
+## デプロイ
+
+サイトは Cloudflare Workers で、静的アセットだけの Worker として動きます。
+`cloudflare.config.ts` が Worker を、`wrangler.config.ts` が `dist/` を指定します。
+
+```sh
+pnpm build:cf     # dist/ と .cloudflare/output の Build Output を作る
+pnpm preview:cf   # Workers と同じ動きでローカルに配信
+pnpm run deploy   # ビルドしてアップロード (`cf auth login` が必要)
+```

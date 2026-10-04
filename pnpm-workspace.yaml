@@ -1,0 +1,4 @@
+packages:
+  - third_party/gosfc/packages/*
+allowBuilds:
+  esbuild: true

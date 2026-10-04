@@ -1,0 +1,3 @@
+[submodule "third_party/gosfc"]
+	path = third_party/gosfc
+	url = https://github.com/goesm-dev/gosfc.git

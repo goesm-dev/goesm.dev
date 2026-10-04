@@ -1,0 +1,49 @@
+name: ci
+on:
+  # Branches run through their pull requests; main runs on push, which also
+  # refreshes the caches pull requests restore.
+  push:
+    branches: [main]
+  pull_request:
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  site:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+      # The goesm repository at full depth: cmd/syncdocs reads its docs at the
+      # version in go.mod. (Directories starting with _ are ignored by go.)
+      - uses: actions/checkout@v7
+        with:
+          repository: goesm-dev/goesm
+          path: _ci/goesm
+          fetch-depth: 0
+      # Go, Node and pnpm at the versions pinned in mise.toml.
+      - uses: jdx/mise-action@v5
+        with:
+          version: 2026.10.0
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+            ~/.local/share/pnpm/store
+          key: site-${{ runner.os }}-${{ hashFiles('mise.toml', 'go.sum', 'pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: site-${{ runner.os }}-${{ hashFiles('mise.toml', 'go.sum', 'pnpm-lock.yaml') }}-
+      - run: test -z "$(gofmt -l client cmd content press site)"
+      - run: go vet ./...
+      # The browser-only packages (syscall/js).
+      - run: go vet ./client/...
+        env:
+          GOOS: js
+          GOARCH: wasm
+      - run: go test ./...
+      # Synced docs match the goesm and gosfc versions in go.mod.
+      - run: go run ./cmd/syncdocs -check -goesm _ci/goesm -gosfc third_party/gosfc
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: node --test tests/

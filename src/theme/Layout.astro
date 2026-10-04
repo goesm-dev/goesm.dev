@@ -1,0 +1,86 @@
+---
+// The page shell. Astro owns routing and <head>; everything inside <body> is
+// the Vue theme, whose components run Go (the site package) through gosfc.
+import { HeadJSON, $runtime as rt } from "go:goesm.dev/site";
+import NavBar from "./NavBar.vue";
+import Sidebar from "./Sidebar.vue";
+import DocPage from "./DocPage.vue";
+import HomePage from "./HomePage.vue";
+import ThemeToggle from "./ThemeToggle.vue";
+import Search from "./Search.vue";
+import Enhance from "./Enhance.vue";
+import LiveDemo from "./LiveDemo.vue";
+import "../styles/theme.css";
+
+interface Props {
+  route: string;
+}
+const { route } = Astro.props;
+const head = JSON.parse(rt.toJSString(HeadJSON(rt.fromJSString(route))));
+const ui = head.ui;
+const isDoc = head.found && head.layout === "doc";
+---
+
+<!doctype html>
+<html lang={head.lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{head.title}</title>
+    <meta name="description" content={head.description} />
+    <meta name="theme-color" content="#0b0f1a" />
+    {head.canonical && <link rel="canonical" href={head.canonical} />}
+    {head.alternates?.map((a: { lang: string; href: string }) => <link rel="alternate" hreflang={a.lang} href={a.href} />)}
+    <meta property="og:title" content={head.title} />
+    <meta property="og:description" content={head.description} />
+    <meta property="og:type" content="website" />
+    {head.canonical && <meta property="og:url" content={head.canonical} />}
+    <meta property="og:image" content="https://goesm.dev/goesm.png" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap.xml" />
+    <script is:inline>
+      try {
+        const t = localStorage.getItem("goesm-theme");
+        if (t === "dark" || (!t && matchMedia("(prefers-color-scheme: dark)").matches)) document.documentElement.classList.add("dark");
+      } catch {}
+    </script>
+  </head>
+  <body class={isDoc ? "layout-doc" : "layout-home"}>
+    <a class="skip-link" href="#main">{ui.skipToContent}</a>
+    {isDoc && <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true" tabindex="-1" />}
+    <NavBar route={route} menu={isDoc}>
+      <Search slot="search" client:idle index={head.search} label={ui.search} hint={ui.searchHint} no-results={ui.noResults} />
+      <ThemeToggle slot="theme" client:load label={ui.toggleTheme} />
+    </NavBar>
+    {
+      isDoc && (
+        <div class="layout">
+          <label for="nav-toggle" class="backdrop" aria-hidden="true" />
+          <Sidebar route={route} />
+          <DocPage route={route} />
+        </div>
+      )
+    }
+    {
+      head.found && head.layout === "home" && (
+        <HomePage route={route}>
+          <LiveDemo slot="demo" client:visible lang={head.locale} />
+        </HomePage>
+      )
+    }
+    {
+      !head.found && (
+        <main id="main" class="not-found">
+          <p class="code">404</p>
+          <h1>{ui.notFound}</h1>
+          <p>{ui.notFoundText}</p>
+          <a class="button brand" href={head.home}>{ui.backHome}</a>
+        </main>
+      )
+    }
+    <footer class="site-footer">
+      <p>{ui.footer}</p>
+    </footer>
+    <Enhance client:idle copied={ui.copied} />
+  </body>
+</html>

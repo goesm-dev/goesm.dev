@@ -12,7 +12,7 @@ goesm.dev は goesm で作られています。ドキュメントエンジン、
 ```text
 content/**/*.md ──► press (Go) ──► goesm ──► Astro のページ + Vue のテーマ ──► 静的 HTML
                                                 │
-                                                └─► ブラウザで動く島 (これも Go)
+                                                └─► ブラウザで動くアイランド (これも Go)
 ```
 
 ## press: Go で書いた VitePress 風エンジン
@@ -20,7 +20,7 @@ content/**/*.md ──► press (Go) ──► goesm ──► Astro のペー�
 `goesm.dev/press` は、ドキュメントサイトに対して VitePress がすることをします。
 
 - [goldmark](https://github.com/yuin/goldmark) による Markdown: CommonMark、
-  GitHub の表、取り消し線、自動リンク
+  GitHub のテーブル、取り消し線、自動リンク
 - `::: tip` / `info` / `warning` / `danger` / `details` コンテナと GitHub の
   アラート (`> [!NOTE]`)
 - 言語ラベル、コピーボタン、行ハイライト (` ```go {2,4-5}`) 付きのコードブロック。
@@ -78,31 +78,31 @@ Astro はこれらのコンポーネントをビルド時に HTML にします�
 
 ## ブラウザで動く Go
 
-いくつかのコンポーネントは Astro の島としてハイドレートされ、その Go のコードが
+いくつかのコンポーネントは Astro のアイランドとしてハイドレートされ、その Go のコードが
 ブラウザで動きます。
 
-| 島 | Go のパッケージ | すること | サイズ (gzip) |
+| アイランド | Go のパッケージ | すること | サイズ (gzip) |
 | --- | --- | --- | --- |
 | 検索 | `client/searchbox`、`press/search` | ロケールのインデックスを読み込み、順位付けとスニペット作成 | 8 KB |
 | ライブデモ (ホーム) | `client/demo` | カート。クリックのたびに Go の `int` で計算 | 3 KB |
 | ページの補助 | `client/enhance` | コピーボタン、スクロールに追従する目次 | 1.5 KB |
 | テーマ切り替え | (コンポーネント内の Go) | ダークモード。`localStorage` に記憶 | 1 KB |
 
-Vue 本体のほかに、goesm の runtime と `syscall/js` を共有します。gzip で約 11 KB で、
+Vue 本体のほかに、goesm のランタイムと `syscall/js` を共有します。gzip で約 11 KB で、
 読み込みは一度だけです。
 
 検索の仕組みは VitePress のローカル検索と同じです。press がビルド時に全セクションの
 プレーンテキストのインデックスを書き出し、ブラウザは最初の検索のときにそれを
 読み込みます。検索のコードは、あえて `strings`、`sort`、`strconv` を使っていません。
-今の goesm では、これらを import すると Unicode のテーブルや reflection も一緒に
-入り、島が何倍にも大きくなるためです。
+今の goesm では、これらを import すると Unicode のテーブルやリフレクションも一緒に
+入り、アイランドが何倍にも大きくなるためです。
 
 ## WebAssembly は不要でした
 
 ブラウザでの重い処理には TinyGo と WebAssembly を使う選択肢もありました。このサイトでは
 必要になりませんでした。重い処理 (Markdown、ハイライト、インデックス作成) はビルド時に
-済んでいて、インデックス (1 言語あたり約 100 KB のテキスト) の検索は素の JavaScript で十分に速いからです。島は小さい
-ままで、DOM を直接呼べます。
+済んでいて、インデックス (1 言語あたり約 100 KB のテキスト) の検索は素の JavaScript で十分に速いからです。アイランドは
+小さいままで、DOM を直接呼べます。
 
 ## リポジトリから同期するドキュメント
 

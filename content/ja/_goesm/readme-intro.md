@@ -1,0 +1,38 @@
+<!-- Synced by cmd/syncdocs. Edit the source instead. -->
+
+Go のパッケージを、ネイティブな ES モジュールにコンパイルします。出力は素の JavaScript（TypeScript として出力）で、WebAssembly は使いません。
+
+goesm は、普通の Go モジュールにある普通の Go パッケージを、パッケージごとに 1 つの ES モジュールに変換します。Vite、Rolldown、esbuild、Bun、Node.js、ブラウザからそのまま import できます。export された Go の関数は JavaScript の関数に、export された型は TypeScript の型付きのクラスになります。Go の意味論（整数演算、スライス、マップ、インターフェース、goroutine、`defer` / `panic` / `recover`、ジェネリクス、リフレクション）は保たれ、ネイティブ Go と突き合わせて検証しています。
+
+> [!NOTE]
+> goesm は実験段階です。現時点で動くもの・動かないものは[現状](/ja/guide/status/)を参照してください。
+
+```go
+package cart
+
+type Item struct {
+	Name     string
+	Price    int
+	Quantity int
+}
+
+func Total(items []Item) int {
+	total := 0
+	for _, item := range items {
+		total += item.Price * item.Quantity
+	}
+	return total
+}
+
+func Discount(total, percent int) int {
+	return total * (100 - percent) / 100
+}
+```
+
+```ts
+import { Discount, Item, Total, $runtime as rt } from "./goesm-ts/example.com/app/cart.ts";
+
+const items = rt.sliceLit([new Item(rt.fromJSString("apple"), 120, 3), new Item(rt.fromJSString("bread"), 250, 1)]);
+Total(items);          // 610
+Discount(2408, 15);    // 2046: Go の整数除算。2046.8 ではない
+```

@@ -1,0 +1,41 @@
+<!-- Synced by cmd/syncdocs. Edit the source instead. -->
+
+1. Go module に goesm と gosfc を tool として追加します。バージョンは go.mod / go.sum で固定されます。
+
+   ```sh
+   go get -tool github.com/goesm-dev/goesm/cmd/goesm@<version>
+   go get -tool github.com/goesm-dev/gosfc/cmd/gosfc@<version>
+   ```
+
+2. Astro に integration を追加します。`@astrojs/vue` が無ければ追加されます。
+
+   ```js
+   // astro.config.mjs
+   import { defineConfig } from "astro/config";
+   import gosfc from "@gosfc/astro";
+
+   export default defineConfig({
+     integrations: [gosfc()],
+   });
+   ```
+
+3. `.vue` で `<script setup lang="go">` を使います。
+
+   ```astro
+   ---
+   import Summary from "../features/cart/Summary.vue";
+   ---
+
+   <Summary />
+   ```
+
+Vite だけで使う場合は `@vitejs/plugin-vue` の前に `@gosfc/vite` を置きます。
+
+```js
+import vue from "@vitejs/plugin-vue";
+import gosfc from "@gosfc/vite";
+
+export default { plugins: [gosfc(), vue()] };
+```
+
+`lang="ts"` や素の `<script setup>` の component はそのまま共存できます。gosfc が触るのは `lang="go"` の component だけです。

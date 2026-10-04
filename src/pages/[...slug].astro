@@ -1,0 +1,14 @@
+---
+import { RoutesJSON, $runtime as rt } from "go:goesm.dev/site";
+import Layout from "../theme/Layout.astro";
+
+// Every Markdown page of the content tree, as the Go engine lists them.
+export function getStaticPaths() {
+  const routes: { slug: string; route: string }[] = JSON.parse(rt.toJSString(RoutesJSON()));
+  return routes.map((r) => ({ params: { slug: r.slug || undefined }, props: { route: r.route } }));
+}
+
+const { route } = Astro.props;
+---
+
+<Layout route={route} />

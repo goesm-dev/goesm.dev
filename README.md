@@ -47,3 +47,15 @@ go run ./cmd/syncdocs -goesm ../goesm -gosfc third_party/gosfc
 ```
 
 CI runs the same with `-check`.
+
+## Deploy
+
+The site runs on Cloudflare Workers as a Worker with static assets only:
+`cloudflare.config.ts` describes the Worker and `wrangler.config.ts` points it
+at `dist/`.
+
+```sh
+pnpm build:cf     # dist/, then the Build Output in .cloudflare/output
+pnpm preview:cf   # serve it locally as Workers would
+pnpm run deploy   # build and upload (needs `cf auth login`)
+```

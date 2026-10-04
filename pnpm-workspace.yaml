@@ -2,3 +2,6 @@ packages:
   - third_party/gosfc/packages/*
 allowBuilds:
   esbuild: true
+  # Its install script only checks the platform binary, which comes as an
+  # optional dependency anyway.
+  workerd: false

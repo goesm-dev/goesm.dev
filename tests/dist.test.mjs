@@ -31,6 +31,11 @@ test("pages exist in both languages", () => {
   assert.match(page("/ja/guide/"), /hreflang="en" href="https:\/\/goesm\.dev\/guide\/"/);
 });
 
+test("each locale has a 404.html where Cloudflare looks for it", () => {
+  assert.match(read("404.html"), /<html lang="en"/);
+  assert.match(read("ja/404.html"), /<html lang="ja"/);
+});
+
 test("doc pages are rendered at build time", () => {
   const html = page("/guide/getting-started/");
   assert.match(html, /<h2 id="install" tabindex="-1">Install/);

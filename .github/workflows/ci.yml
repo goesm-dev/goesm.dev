@@ -47,3 +47,6 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: node --test tests/
+      # The Cloudflare Workers Build Output, checked but not uploaded.
+      - run: pnpm exec wrangler build --experimental-new-config --experimental-cf-build-output
+      - run: pnpm exec cf deploy --prebuilt --dry-run

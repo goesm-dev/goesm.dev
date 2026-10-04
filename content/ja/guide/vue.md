@@ -12,7 +12,7 @@ description: gosfc は Vue コンポーネントの <script setup> で本物の 
 
 <!--@include: ../_gosfc/readme-usage-astro.md-->
 
-## Go block の書き方
+## Go ブロックの書き方
 
 <!--@include: ../_gosfc/readme-writing-the-go-block.md-->
 

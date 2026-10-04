@@ -47,10 +47,10 @@ const isDoc = head.found && head.layout === "doc";
   </head>
   <body class={isDoc ? "layout-doc" : "layout-home"}>
     <a class="skip-link" href="#main">{ui.skipToContent}</a>
-    {isDoc && <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true" tabindex="-1" />}
-    <NavBar route={route} menu={isDoc}>
+    <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true" tabindex="-1" />
+    <NavBar route={route}>
       <Search slot="search" client:idle index={head.search} label={ui.search} hint={ui.searchHint} no-results={ui.noResults} />
-      <ThemeToggle slot="theme" client:load label={ui.toggleTheme} />
+      <ThemeToggle slot="theme" client:idle label={ui.toggleTheme} />
     </NavBar>
     {
       isDoc && (
@@ -58,6 +58,14 @@ const isDoc = head.found && head.layout === "doc";
           <label for="nav-toggle" class="backdrop" aria-hidden="true" />
           <Sidebar route={route} />
           <DocPage route={route} />
+        </div>
+      )
+    }
+    {
+      !isDoc && (
+        <div class="menu-layer">
+          <label for="nav-toggle" class="backdrop" aria-hidden="true" />
+          <Sidebar route={route} />
         </div>
       )
     }

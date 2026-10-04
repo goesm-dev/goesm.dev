@@ -15,17 +15,29 @@ import (
 type Box struct {
 	url   string
 	index *search.Index
+	done  chan struct{} // closed when the fetch in flight ends
 }
 
 func New(indexURL string) *Box { return &Box{url: indexURL} }
 
 // Load fetches the index once. It blocks until the response arrives (goesm
-// turns it, and its callers, into async functions).
+// turns it, and its callers, into async functions). Calls while a fetch is
+// in flight wait for it; a failed fetch is retried by the next call.
 func (b *Box) Load() {
 	if b.index != nil {
 		return
 	}
-	b.index = search.Parse(fetchText(b.url))
+	if b.done != nil {
+		<-b.done
+		return
+	}
+	done := make(chan struct{})
+	b.done = done
+	if text := fetchText(b.url); text != "" {
+		b.index = search.Parse(text)
+	}
+	b.done = nil
+	close(done)
 }
 
 func (b *Box) Search(q string) []search.Result {

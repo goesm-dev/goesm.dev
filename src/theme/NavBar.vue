@@ -1,7 +1,7 @@
 <template>
   <header class="navbar">
     <div class="navbar-inner">
-      <label v-if="menu" for="nav-toggle" class="menu-button" :title="bar.ui.menu" :aria-label="bar.ui.menu">
+      <label for="nav-toggle" class="menu-button" :title="bar.ui.menu" :aria-label="bar.ui.menu">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z" /></svg>
       </label>
       <a class="brand" :href="bar.home">
@@ -44,11 +44,9 @@ import "goesm.dev/site"
 
 type Props struct {
 	Route string
-	Menu  bool
 }
 
 bar := site.NavBar(props.Route)
-menu := props.Menu
 
 current := ""
 for _, l := range bar.Locales {

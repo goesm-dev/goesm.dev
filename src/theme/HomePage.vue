@@ -19,7 +19,7 @@
       </div>
       <div v-if="home.hero.image" class="hero-image">
         <div class="hero-glow" aria-hidden="true"></div>
-        <img :src="home.hero.image" :alt="home.hero.name" width="1000" height="250" />
+        <img :src="home.hero.image" :alt="home.hero.name" width="1000" height="250" fetchpriority="high" />
       </div>
     </section>
     <section class="features">

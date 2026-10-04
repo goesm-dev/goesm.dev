@@ -47,6 +47,17 @@ test("search indexes cover both languages", () => {
   }
 });
 
+test("the first paint needs no request after the HTML", () => {
+  // Inlined CSS: on a slow connection each extra request before the first
+  // paint costs a full round trip.
+  for (const r of ["/", "/ja/guide/", "/reference/architecture/"]) {
+    const html = page(r);
+    assert.doesNotMatch(html, /<link rel="stylesheet"/, r);
+    assert.match(html, /<style>/, r);
+    assert.doesNotMatch(html.slice(0, html.indexOf("</head>")), /<script[^>]+src=/, `${r}: blocking script`);
+  }
+});
+
 test("the Go islands are small", () => {
   const assets = readdirSync(new URL("_astro/", dist));
   for (const name of ["Search", "LiveDemo", "Enhance", "ThemeToggle"]) {

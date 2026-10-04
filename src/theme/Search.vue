@@ -1,6 +1,6 @@
 <template>
   <div class="search">
-    <button type="button" class="search-button" :aria-label="label" @click="Open">
+    <button type="button" class="search-button" :aria-label="label" @click="Open" @pointerenter="Preload" @focus="Preload">
       <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M15.5 14h-.8l-.3-.3A6.5 6.5 0 1 0 14 15.5l.3.3v.8l5 5 1.5-1.5-5-5zm-6 0a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z" /></svg>
       <span class="search-label">{{ label }}</span>
       <kbd>/</kbd>
@@ -67,6 +67,12 @@ func Open() {
 	box.Load()
 	loading = false
 	results = box.Search(query)
+}
+
+// Preload starts fetching the index when the pointer or focus reaches the
+// button, so that on a slow connection it is (partly) there by the click.
+func Preload() {
+	box.Load()
 }
 
 func Query(q string) {

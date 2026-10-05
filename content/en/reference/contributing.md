@@ -45,7 +45,7 @@ go test ./...
 | `TestPrograms` | the commands in `testdata/programs` print the same output and exit with the same status under native Go and goesm (Node.js and Bun) |
 | `TestToolexec` | a `-toolexec` program's rewrites of a module and of the standard library reach goesm's output as they reach `go build`'s (`testdata/toolexec`) |
 | `TestFetch` | HTTP clients use `fetch`, also through a Transport with a plain `net.Dialer`, and a custom dialer is still called (`testdata/fetch`, against a local server) |
-| `TestUseCase*` | the use cases of [docs/use-cases.md](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.1/docs/use-cases.md) (`testdata/usecases`) behave as natively: command-line tools, a build tool, SSR, popular libraries, an HTTP and Connect server under `http.ListenAndServe` (Node.js and Bun) and as a Cloudflare Workers fetch handler (workerd) |
+| `TestUseCase*` | the use cases of [docs/use-cases.md](/reference/use-cases/) (`testdata/usecases`) behave as natively: command-line tools, a build tool, SSR, popular libraries, an HTTP and Connect server under `http.ListenAndServe` (Node.js and Bun) and as a Cloudflare Workers fetch handler (workerd) |
 | `TestStdlibStatus -v` | reports which standard library packages lower and how many functions are stubs |
 | `TestModuleCache*` | modules taken from the module cache are byte for byte the ones lowering produces, and a change of whole-program facts re-lowers the dependencies it affects (see ARCHITECTURE.md) |
 
@@ -92,4 +92,4 @@ See [docs/conformance.md](/reference/conformance/) for the variables, the baseli
 
 ## License
 
-goesm is released under the [BSD 3-Clause License](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.1/LICENSE). By contributing, you agree that your contributions are licensed under it.
+goesm is released under the [BSD 3-Clause License](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.2/LICENSE). By contributing, you agree that your contributions are licensed under it.

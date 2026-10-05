@@ -5,12 +5,13 @@ import "goesm.dev/press"
 // The gosfc site, at /gosfc/: the documentation of gosfc, which runs Go in
 // Vue components and Astro pages. Its content is content/gosfc/.
 
-var gosfcSidebar = func(guide, intro, start, block, importing, bench, ref, arch, contrib string) []press.SidebarGroup {
+var gosfcSidebar = func(guide, intro, start, block, astro, importing, bench, ref, arch, contrib string) []press.SidebarGroup {
 	return []press.SidebarGroup{
 		{Text: guide, Items: []press.SidebarItem{
 			{Text: intro, Link: "/guide/"},
 			{Text: start, Link: "/guide/getting-started"},
 			{Text: block, Link: "/guide/go-block"},
+			{Text: astro, Link: "/guide/astro"},
 			{Text: importing, Link: "/guide/importing-go"},
 			{Text: bench, Link: "/guide/benchmark"},
 		}},
@@ -57,8 +58,8 @@ func withFooter(ui press.UI, footer string) press.UI {
 }
 
 func init() {
-	enSide := gosfcSidebar("Guide", "What is gosfc?", "Getting started", "Writing the Go block", "Importing Go from JavaScript", "Benchmark", "Reference", "Architecture", "Contributing")
-	jaSide := gosfcSidebar("ガイド", "gosfc とは", "はじめに", "Go ブロックの書き方", "JavaScript から Go を import する", "ベンチマーク", "リファレンス", "アーキテクチャ", "コントリビューション")
+	enSide := gosfcSidebar("Guide", "What is gosfc?", "Getting started", "Writing the Go block", "Go in .astro files", "Importing Go from JavaScript", "Benchmark", "Reference", "Architecture", "Contributing")
+	jaSide := gosfcSidebar("ガイド", "gosfc とは", "はじめに", "Go ブロックの書き方", ".astro ファイルで Go を使う", "JavaScript から Go を import する", "ベンチマーク", "リファレンス", "アーキテクチャ", "コントリビューション")
 	gosfcEn.Sidebar = map[string][]press.SidebarGroup{"/guide/": enSide, "/reference/": enSide}
 	gosfcJa.Sidebar = map[string][]press.SidebarGroup{"/guide/": jaSide, "/reference/": jaSide}
 }

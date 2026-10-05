@@ -29,6 +29,8 @@
    <Summary />
    ```
 
+   An `.astro` file can also be written in Go: see [Go in .astro files](/gosfc/guide/astro/).
+
 To use gosfc with Vite alone, put `@gosfc/vite` before `@vitejs/plugin-vue`.
 
 ```js

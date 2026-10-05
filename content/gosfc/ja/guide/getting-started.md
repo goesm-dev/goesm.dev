@@ -15,5 +15,7 @@ Go のモジュールでもあります (ルートに `go.mod`)。コンポー�
 ## 次に読むもの
 
 - [Go ブロックの書き方](./go-block.md): ブロックに書けるものと、テンプレートからの見え方
+- [.astro ファイルで Go を使う](./astro.md): `.astro` ファイルのフロントマターと
+  `<script>` に書く Go
 - [JavaScript から Go を import する](./importing-go.md): `.astro`、`.ts`、`.js`
   ファイルでの `go:` の import

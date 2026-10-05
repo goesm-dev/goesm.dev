@@ -2,6 +2,7 @@ package site
 
 import (
 	"encoding/json"
+	"net/url"
 	"os"
 	"regexp"
 	"strings"
@@ -42,6 +43,11 @@ func TestLinks(t *testing.T) {
 	for route, html := range pages {
 		for _, m := range internalLink.FindAllStringSubmatch(html, -1) {
 			target, frag := m[1], strings.TrimPrefix(m[2], "#")
+			// Markdown percent-encodes non-ASCII fragments; browsers decode
+			// them before matching an id.
+			if f, err := url.PathUnescape(frag); err == nil {
+				frag = f
+			}
 			if pageIDs, ok := ids[target]; ok {
 				if frag != "" && !pageIDs[frag] {
 					t.Errorf("%s: link to missing heading %s#%s", route, target, frag)

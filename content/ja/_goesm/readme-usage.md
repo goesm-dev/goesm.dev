@@ -56,7 +56,21 @@ goesm は、変換した各パッケージの TypeScript モジュールをキ�
 - Go の文字列はバイト列です。渡すときは `rt.fromJSString(s)`、受け取るときは `rt.toJSString(s)` を使います。スライスは `rt.sliceLit([...])` で渡し、`rt.toArray(s)` で受け取ります。複数の戻り値は配列として返ります。`error` は Go のインターフェース値として返ります。
 - チャネル操作、`time.Sleep`、ミューテックスの待ちのようにブロックしうる関数は、Promise を返す `async function` になります。それ以外の関数は同期関数です。
 
-`rt` はランタイムで、すべてのモジュールが `$runtime` として再 export しています。[examples/](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.1/examples) には、呼び出し側の JavaScript と組み合わせて実行できる例があります。
+`rt` はランタイムで、すべてのモジュールが `$runtime` として再 export しています。[examples/](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.2/examples) には、呼び出し側の JavaScript と組み合わせて実行できる例があります。
+
+### Go から JavaScript を呼ぶ
+
+本体のない関数を宣言すると、ES モジュールの関数を取り込めます。値の変換は Go の型に従います。
+
+```go
+//goesm:import "./format.ts" formatPrice
+func formatPrice(yen int, currency string) string
+
+//goesm:import "./api.ts" fetchUser await
+func fetchUser(id string) (User, error) // Promise を待ち、例外と reject は error になる
+```
+
+文字列、スライス、マップ、構造体、関数、`js.Value`、`any` が境界を越えられます。構造体のプロパティ名は `encoding/json` と同じ規則で決まります。1 回の呼び出しは、JavaScript から同じ関数を呼ぶ場合より数ナノ秒多くかかるだけです。詳しくは [docs/js-imports.ja.md](/ja/reference/js-imports/) にまとめています。Vue コンポーネントは [gosfc](https://github.com/goesm-dev/gosfc) から使います。
 
 ### HTTP を処理する
 
@@ -73,4 +87,4 @@ import { Handler, $runtime as rt } from "./goesm-ts/example.com/app/api.ts";
 export default { fetch: rt.fetchHandler(Handler()) };
 ```
 
-各リクエストは専用の goroutine で処理され、ボディは最初に全部読み込まれます。レスポンスはハンドラが戻った時点で送られます。ハンドラが flush した場合は、その時点からレスポンスがストリームになります。Server-Sent Events や Connect のサーバーストリーミングはこの仕組みで動きます。Workers では、`nodejs_compat` フラグを有効にすると、Worker のテキストバインディングとシークレットを `os.Getenv` で読めます。HTTP クライアントは `fetch` を使います。どこで何に対応しているかは [docs/use-cases.ja.md](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.1/docs/use-cases.ja.md) にまとめています。
+各リクエストは専用の goroutine で処理され、ボディは最初に全部読み込まれます。レスポンスはハンドラが戻った時点で送られます。ハンドラが flush した場合は、その時点からレスポンスがストリームになります。Server-Sent Events や Connect のサーバーストリーミングはこの仕組みで動きます。Workers では、`nodejs_compat` フラグを有効にすると、Worker のテキストバインディングとシークレットを `os.Getenv` で読めます。HTTP クライアントは `fetch` を使います。どこで何に対応しているかは [docs/use-cases.ja.md](/ja/reference/use-cases/) にまとめています。

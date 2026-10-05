@@ -45,7 +45,7 @@ go test ./...
 | `TestPrograms` | `testdata/programs` の command が native Go と goesm (Node.js と Bun) で同じ出力をし、同じ status で終了する |
 | `TestToolexec` | `-toolexec` program による module と標準 library の書き換えが、`go build` と同じように goesm の出力に反映される (`testdata/toolexec`) |
 | `TestFetch` | HTTP client が `fetch` を使い、素の `net.Dialer` を持つ Transport でも同様で、独自の dialer は引き続き呼ばれる (`testdata/fetch`、local の server に対して) |
-| `TestUseCase*` | `testdata/usecases` にある [docs/use-cases.ja.md](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.1/docs/use-cases.ja.md) のユースケースが native と同じように動く: CLI、ビルドツール、SSR、よく使われるライブラリ、Node.js と Bun の `http.ListenAndServe` と workerd 上の Cloudflare Workers の fetch handler で動く HTTP と Connect の server |
+| `TestUseCase*` | `testdata/usecases` にある [docs/use-cases.ja.md](/ja/reference/use-cases/) のユースケースが native と同じように動く: CLI、ビルドツール、SSR、よく使われるライブラリ、Node.js と Bun の `http.ListenAndServe` と workerd 上の Cloudflare Workers の fetch handler で動く HTTP と Connect の server |
 | `TestStdlibStatus -v` | 標準 library のどの package が lowering でき、何個の関数が stub かを報告する |
 | `TestModuleCache*` | モジュールキャッシュから取り出したモジュールが lowering の結果とバイト単位で一致し、プログラム全体の解析結果が変わったときに影響を受ける依存先を lowering し直す。詳細は ARCHITECTURE.ja.md にある |
 
@@ -92,4 +92,4 @@ diff native.txt goesm.txt
 
 ## ライセンス
 
-goesm は [BSD 3-Clause License](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.1/LICENSE) で公開しています。貢献したものは、このライセンスで提供されることに同意したものとみなします。
+goesm は [BSD 3-Clause License](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.2/LICENSE) で公開しています。貢献したものは、このライセンスで提供されることに同意したものとみなします。

@@ -1,12 +1,12 @@
 <!-- Synced by cmd/syncdocs. Edit the source instead. -->
 
-[bench/](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.1/bench) runs the same Go kernels compiled by goesm, [GopherJS](https://github.com/gopherjs/gopherjs), Go's own `GOOS=js GOARCH=wasm` port and [TinyGo](https://tinygo.org)'s wasm target under Node.js, Bun and Chromium, checks every result against native Go, and also measures startup time and output size. Native Go and the same kernels written by hand in JavaScript are references. What each kernel does, how the outputs are built and called, and the fairness caveats are in [bench/README.md](/reference/benchmark/). All numbers, per runtime, are in [bench/results/results.md](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.1/bench/results/results.md).
+[bench/](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.2/bench) runs the same Go kernels compiled by goesm, [GopherJS](https://github.com/gopherjs/gopherjs), Go's own `GOOS=js GOARCH=wasm` port and [TinyGo](https://tinygo.org)'s wasm target under Node.js, Bun and Chromium, checks every result against native Go, and also measures startup time and output size. Native Go and the same kernels written by hand in JavaScript are references. What each kernel does, how the outputs are built and called, and the fairness caveats are in [bench/README.md](/reference/benchmark/). All numbers, per runtime, are in [bench/results/results.md](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.2/bench/results/results.md).
 
 How the numbers are measured:
 
 - Every implementation is measured on its prebuilt output. Building and the TypeScript-to-JavaScript step happen beforehand and are in no measured time. Loading the output, including compiling and instantiating wasm, is left out of the kernel times and counted in startup time.
 - Native Go runs the same measuring loop in Go, inside a binary built with `go build`.
-- Hand-written JS is [bench/js/handwritten.mjs](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.1/bench/js/handwritten.mjs), imported as an ES module as it is.
+- Hand-written JS is [bench/js/handwritten.mjs](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.2/bench/js/handwritten.mjs), imported as an ES module as it is.
 - For goesm, the TypeScript that `goesm build -minify` emits is bundled into one ES module, `kernels.js`, by the esbuild built into goesm, and that module is imported.
 - For GopherJS, the script `gopherjs build -m` emits is loaded. For Go wasm and TinyGo wasm, the `.wasm` file and `wasm_exec.js` are loaded.
 - Each kernel is called from JavaScript. After a warm-up of at least 300 ms and at least 3 calls, it is timed for at least 10 calls and at least 1000 ms, and the median is the result. A kernel whose calls are slow stops after at least 3 calls once 10 s have passed, even if it has fewer than 10 calls.

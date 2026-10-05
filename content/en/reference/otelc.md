@@ -22,7 +22,7 @@ OTEL_TRACES_EXPORTER=console node dist/app.js
 
 ## What matches native Go
 
-`TestOtelc` (`go test ./test -run TestOtelc`, with `GOESM_TEST_OTELC` naming an otelc binary) builds [testdata/otelc](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.0/testdata/otelc) natively and with goesm and requires the same telemetry from the console exporter, under Node.js and Bun:
+`TestOtelc` (`go test ./test -run TestOtelc`, with `GOESM_TEST_OTELC` naming an otelc binary) builds [testdata/otelc](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.1/testdata/otelc) natively and with goesm and requires the same telemetry from the console exporter, under Node.js and Bun:
 
 * the spans otelc's `net/http` client instrumentation creates, with their names, kinds, attributes and status;
 * a span started with the OpenTelemetry API, and the HTTP spans nested under it, also from a goroutine started inside it (otelc propagates the current span through goroutine-local storage);

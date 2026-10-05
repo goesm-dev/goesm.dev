@@ -44,6 +44,11 @@ test("the gosfc site is its own site", () => {
   assert.match(html, /<span class="brand-name">gosfc<\/span>/);
   assert.match(html, /href="https:\/\/github\.com\/goesm-dev\/gosfc"/);
   assert.match(page("/guide/"), /<a href="\/gosfc\/"[^>]*>gosfc</);
+  // The navbar's GitHub icon is the tool's repository; the footer links the site's own.
+  assert.match(page("/guide/"), /class="social"[^>]*href="https:\/\/github\.com\/goesm-dev\/goesm"|href="https:\/\/github\.com\/goesm-dev\/goesm"[^>]*class="social"/);
+  assert.match(html, /class="social"[^>]*href="https:\/\/github\.com\/goesm-dev\/gosfc"|href="https:\/\/github\.com\/goesm-dev\/gosfc"[^>]*class="social"/);
+  assert.match(html, /<footer class="site-footer">[\s\S]*<a href="https:\/\/github\.com\/goesm-dev\/goesm\.dev">Source of this site<\/a>/);
+  assert.match(page("/gosfc/ja/"), /<a href="https:\/\/github\.com\/goesm-dev\/goesm\.dev">このサイトのソース<\/a>/);
 });
 
 test("each locale has a 404.html where Cloudflare looks for it", () => {

@@ -100,6 +100,7 @@ type UI struct {
 	CopyCode      string `json:"copyCode"`
 	Copied        string `json:"copied"`
 	Footer        string `json:"footer"`
+	SiteSource    string `json:"siteSource"`   // link text to the site's own repository
 	ViewMarkdown  string `json:"viewMarkdown"` // link to the page's Markdown version
 	// OtherPages heads the pages outside the sidebar in llms.txt.
 	OtherPages string `json:"-"`

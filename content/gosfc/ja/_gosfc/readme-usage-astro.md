@@ -1,6 +1,6 @@
 <!-- Synced by cmd/syncdocs. Edit the source instead. -->
 
-1. Go モジュールに goesm と gosfc をツールとして追加します。バージョンは go.mod / go.sum で固定されます。
+1. Go モジュールに goesm と gosfc をツールとして追加します。バージョンは go.mod / go.sum で固定されます。gosfc には goesm v0.0.1-beta.3 以降が必要です。
 
    ```sh
    go get -tool github.com/goesm-dev/goesm/cmd/goesm@<version>

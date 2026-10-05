@@ -1,7 +1,7 @@
 ---
 // The page shell. Astro owns routing and <head>; everything inside <body> is
 // the Vue theme, whose components run Go (the site package) through gosfc.
-import { HeadJSON, $runtime as rt } from "go:goesm.dev/site";
+import { HeadJSON } from "go:goesm.dev/site";
 import NavBar from "./NavBar.vue";
 import Sidebar from "./Sidebar.vue";
 import DocPage from "./DocPage.vue";
@@ -16,7 +16,7 @@ interface Props {
   route: string;
 }
 const { route } = Astro.props;
-const head = JSON.parse(rt.toJSString(HeadJSON(rt.fromJSString(route))));
+const head = JSON.parse(HeadJSON(route));
 const ui = head.ui;
 const isDoc = head.found && head.layout === "doc";
 // goesm and gosfc are names: browser translation turned them into words

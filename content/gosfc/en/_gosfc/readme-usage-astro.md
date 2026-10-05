@@ -1,6 +1,6 @@
 <!-- Synced by cmd/syncdocs. Edit the source instead. -->
 
-1. Add goesm and gosfc to your Go module as tools. Their versions are pinned by go.mod / go.sum.
+1. Add goesm and gosfc to your Go module as tools. Their versions are pinned by go.mod / go.sum. gosfc needs goesm v0.0.1-beta.3 or later.
 
    ```sh
    go get -tool github.com/goesm-dev/goesm/cmd/goesm@<version>

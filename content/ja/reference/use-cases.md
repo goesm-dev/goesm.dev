@@ -36,8 +36,8 @@ goesm の対応範囲は、言語機能ではなくユースケースで定め�
 `http.Handler` は、次のように Worker の fetch ハンドラになります。
 
 ```ts
-import { Handler, $runtime as rt } from "./goesm-ts/example.com/app/api.ts";
-export default { fetch: rt.fetchHandler(Handler()) };
+import { Handler } from "./goesm-ts/example.com/app/api.ts";
+export default { fetch: Handler() };
 ```
 
 | ユースケース | 典型的なコード | 状態 | 確認方法 |
@@ -55,32 +55,33 @@ export default { fetch: rt.fetchHandler(Handler()) };
 | ユースケース | 典型的なコード | 状態 | 確認方法 |
 | --- | --- | --- | --- |
 | コンポーネントから呼ぶドメインロジック | 構造体、メソッド、`errors.Is`・`As`・`Join` によるエラー処理、ジェネリクス、`encoding/json`、`regexp`、`strings`、`strconv`、`time` | 対応 | Vite でビルドし、Chromium で手作業で確認しました |
-| Go からの DOM 操作 | `syscall/js` による要素の作成と検索、`js.FuncOf` によるイベントリスナー、入力値の読み取り、タイマーと goroutine | 対応 | Chromium で手作業で確認しました |
+| Go からの DOM 操作 | `syscall/js` または `honnef.co/go/js/dom/v2` による要素の作成と検索、`js.FuncOf` によるイベントリスナー、入力値の読み取り、タイマーと goroutine。使い方は [dom.ja.md](/ja/reference/dom/) にまとめています | 対応 | Chromium で手作業で確認しました |
 | ブラウザでの Connect のクライアント | Connect、Connect JSON、gRPC-Web の unary とサーバーストリーミング、期限とエラー。ストリーミングは届いた順に受け取れます | 対応 | Vite でビルドし、Chromium で手作業で確認しました |
 | React、Preact、Next.js | TSX から Go の関数を呼びます。描画中、イベントハンドラ、エフェクト、Next.js の Client Component と Server Component と Route Handler から呼び、Turbopack と webpack の両方でビルドします | 対応 | Vite 8 上の React 19 と Preact、Next.js 16 を Chromium で手作業で確認しました |
 
 出力は TypeScript で書かれた ES モジュールなので、Vite、Rolldown、Turbopack、webpack、esbuild はプラグインなしでバンドルできます。Go は JSX の中に書くのではなく、他のモジュールと同じように JSX から呼びます。生成するファイルはすべて `// @ts-nocheck` で始まります。そのため、`noUnusedLocals` や ES2017 のターゲットといったプロジェクト側の厳しい設定は生成コードを検査し直さず、export された型だけが呼び出し側に届きます。残る設定は 2 つです。1 つは、モジュールを `.ts` 付きの名前で import する場合に TypeScript の `allowImportingTsExtensions` が必要になることで、拡張子なしで import すれば不要です。もう 1 つは、goesm の出力を `node_modules` のパッケージとして配布する場合に Next.js の `transpilePackages` が必要になることです。
 
-Go のコードがページの JavaScript に加える量を、Vite 8 で minify して gzip した大きさで示します。
+Go のコードがページの JavaScript に加える量を、`goesm build -minify` で minify して gzip した大きさで示します。Connect のクライアントだけは Vite 8 で計測しました。
 
 | ページが使うもの | gzip |
 | --- | ---: |
-| `strings` だけを使うパッケージ | 11 KiB |
-| `syscall/js` による DOM 操作 | 43 KiB |
-| `fmt` による hello world | 117 KiB |
-| `fmt` と `reflect` を伴う `encoding/json` を使うドメインロジック | 276 KiB |
+| `syscall/js` による DOM 操作。[dom.ja.md](/ja/reference/dom/) のカウンターのボタン | 9 KiB |
+| `strings.Fields`、`Join`、`ToLower` を使う関数 | 15 KiB |
+| 同じカウンターを `honnef.co/go/js/dom/v2` で書いたもの | 50 KiB |
+| `fmt` による hello world | 90 KiB |
+| `reflect` を伴う `encoding/json` による構造体への JSON のデコード | 193 KiB |
 | protobuf と `net/http` を伴う Connect のクライアント | 1.3 MiB |
 
 ## JavaScript と TypeScript から使う Go のライブラリ
 
-Go のパッケージが export する関数と型は、上のどの実行場所でも、そのモジュールの export として TypeScript の型付きで使えます。
+ビルドした Go のパッケージが export する関数は、上のどの実行場所でも、そのモジュールの export として TypeScript の型付きで使えます。
 
 | ユースケース | 典型的なコード | 状態 | 確認方法 |
 | --- | --- | --- | --- |
-| export された Go の関数と型を TS から呼ぶ | 関数、クラスになる構造体、値レシーバのメソッド、タプルになる複数の戻り値、`error`、Promise を返すブロックしうる関数 | 対応。ただし値の変換は手作業で行います | `TestTSC`、`TestJS`、`TestExamples` |
+| export された Go の関数を TS から呼ぶ | 文字列、配列、プレーンオブジェクトを渡して受け取る関数、メソッドを持つハンドル、配列になる複数の戻り値、例外になる `error`、Promise を返すブロックしうる関数 | 対応 | `TestTSC`、`TestJS`、`TestExamples` |
 | よく使われる純 Go のライブラリ | `google/uuid`、`golang.org/x/mod/semver`、`Masterminds/semver`、`shopspring/decimal`、`go-playground/validator`、`expr-lang/expr`、`tidwall/gjson`、`golang.org/x/text`、`yuin/goldmark`、`gopkg.in/yaml.v3` | 対応 | `TestUseCaseLibraries` の `testdata/usecases/libs` と `TestUseCaseBuildTool` |
 
-JavaScript から Go を呼ぶときの ABI はまだないので、呼び出し側は各モジュールが `$runtime` として再 export するランタイムで値を変換します。文字列は `rt.fromJSString` と `rt.toJSString`、スライスは `rt.sliceLit` と `rt.toArray`、エラーは `rt.icall(err, "Error")` で変換します。実際には Go の API ごとに小さなラッパーのモジュールを 1 つ書くことになります。`fromJSString` を通さずに渡した文字列は、ASCII 以外の文字が崩れた状態で Go に届きます。
+引数と戻り値は Go の型に従って境界で変換されます。文字列は JS の文字列、スライスは配列、構造体はプレーンオブジェクトのまま渡して受け取れます。詳しくは [js-exports.ja.md](/ja/reference/js-exports/) にまとめています。
 
 ## Go から使う JavaScript と TypeScript
 
@@ -96,8 +97,8 @@ Go のコードは、`//goesm:import` で宣言した ES モジュールの関�
 
 75 パーセンタイルから 95 パーセンタイルの間で分かっている不足を挙げます。これらを必要とするコードも、一部は動くことがあります。
 
-- **変換なしで JS から Go を呼ぶこと。** 文字列、スライス、マップ、エラーは手作業で変換します。ポインタの戻り値と関数型の引数は `any` 型になり、ポインタレシーバのメソッドは `Cart$Add(c, item)` のような独立した関数になります。Go の構造体は、プレーンなオブジェクトに写さない限り、Next.js の Server Component から Client Component へ props として渡せません。
-- **バンドルの大きさ。** `fmt`、`encoding/json`、`reflect` で gzip 後に約 200 KiB かかります。`errors.New` や `regexp.MustCompile` のように関数呼び出しで初期化するパッケージ変数があると、import した側が何も使わなくてもそのパッケージはバンドルに残ります。`net/http` のクライアントは、リクエストを `fetch` で送るにもかかわらず TLS と HTTP/2 のコードを残します。
+- **ハンドルのフィールド:** メソッドを持つ構造体型へのポインタは Go のオブジェクトそのままで JavaScript に渡るので、そのフィールドには Go の内部表現が入っています。データはメソッドや関数を通して読みます。
+- **バンドルの大きさ。** `fmt.Sprintf` を使うパッケージは gzip 後に約 95 KiB になります。その大半は、`fmt` がすべての引数に使う `reflect` です。`errors.New` 以外の関数呼び出しで初期化するパッケージ変数があると、import した側が何も使わなくても、そのパッケージはバンドルに残ります。`regexp.MustCompile` がその例です。`net/http` のクライアントは、リクエストを `fetch` で送るにもかかわらず TLS と HTTP/2 のコードを残します。`time`、`strings`、`strconv` の一部だけを使うコードは小さく収まります。`time` の 6 つの関数を使うパッケージは 13 KiB です。
 - **HTTP サーバー:** HTTP/2 と gRPC 本来のプロトコル、TLS による `ListenAndServeTLS`、WebSocket と `Hijack`、トレーラー、ハンドラの実行中に読むストリーミングのリクエストボディ、クライアントストリーミングと双方向ストリーミングの RPC、`net.Listener` を渡す `Serve` はまだありません。Connect と gRPC-Web は動きます。
 - **fetch 以外の Workers の機能:** KV、D1、R2、Durable Objects などのバインディングは `syscall/js` を通してしか使えません。`ctx.waitUntil` にはつながっていないので、レスポンスの後も動いている goroutine は止められることがあります。
 - **ネットワークとプロセス:** 生の TCP や UDP に対する `net.Dial` と `net.Listen`、`pgx` や `go-sql-driver/mysql` のように TCP で接続するデータベースドライバ、`os/exec` は使えません。

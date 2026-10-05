@@ -8,7 +8,7 @@
     <div class="demo-card">
       <table>
         <tbody>
-          <tr v-for="(item, i) in cart.items" :key="i">
+          <tr v-for="(item, i) in state.items" :key="i">
             <th scope="row">{{ item.name }}</th>
             <td class="num">{{ item.price }}</td>
             <td class="qty">
@@ -20,12 +20,12 @@
         </tbody>
       </table>
       <label class="demo-discount">
-        <span>{{ t.discount }} {{ cart.percent }}%</span>
-        <input type="range" min="0" max="50" :value="cart.percent" @input="SetPercent($event.target.value)" />
+        <span>{{ t.discount }} {{ state.percent }}%</span>
+        <input type="range" min="0" max="50" :value="state.percent" @input="SetPercent($event.target.value)" />
       </label>
       <dl class="demo-totals">
         <div><dt>Total(items)</dt><dd>{{ total }}</dd></div>
-        <div><dt>Discount(total, {{ cart.percent }})</dt><dd>{{ discounted }}</dd></div>
+        <div><dt>Discount(total, {{ state.percent }})</dt><dd>{{ discounted }}</dd></div>
       </dl>
     </div>
   </section>
@@ -73,12 +73,14 @@ if props.Site == "gosfc" {
 }
 
 cart := demo.NewCart(props.Lang)
+state := *cart // the template reads a copy: a *Cart would reach it as a handle
 total := 0
 discounted := 0
 exact := ""
 float := ""
 
 func update() {
+	state = *cart
 	total = demo.Total(cart.Items)
 	discounted = demo.Discount(total, cart.Percent)
 	exact, float = demo.Formula(total, cart.Percent)

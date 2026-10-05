@@ -92,4 +92,4 @@ diff native.txt goesm.txt
 
 ## ライセンス
 
-goesm は [BSD 3-Clause License](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.2/LICENSE) で公開しています。貢献したものは、このライセンスで提供されることに同意したものとみなします。
+goesm は [BSD 3-Clause License](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.3/LICENSE) で公開しています。貢献したものは、このライセンスで提供されることに同意したものとみなします。

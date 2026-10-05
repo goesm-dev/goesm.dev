@@ -70,7 +70,7 @@ Arguments are converted from Go to JavaScript and results from JavaScript to Go,
 | `any` | to JavaScript, the conversion of the dynamic value; to Go, the value as `encoding/json` decodes it into an `any` |
 | variadic parameter | separate arguments |
 
-Values are copied: a slice, map or struct changed on the other side does not change the original. A JavaScript value that should stay itself, such as a DOM element or a class instance, is a `js.Value`. Several results are an array returned by the JavaScript function. Types without a JavaScript counterpart, such as channels and complex numbers, are compile errors at the directive.
+Values are copied: a slice, map or struct changed on the other side does not change the original. JavaScript calling Go uses the same table in the other direction ([js-exports.md](/reference/js-exports/)). A JavaScript value that should stay itself, such as a DOM element or a class instance, is a `js.Value`. Several results are an array returned by the JavaScript function. Types without a JavaScript counterpart, such as channels and complex numbers, are compile errors at the directive.
 
 ## Errors
 
@@ -89,18 +89,18 @@ if errors.As(err, &jerr) {
 
 ## Performance
 
-A call through `//goesm:import` costs a few nanoseconds more than a call from JavaScript to the same function when the arguments are numbers, ASCII strings or structs of such fields. The same call through `syscall/js` costs 3 times as much with Japanese text and up to 160 times as much with a struct. [bench/jsimport](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.2/bench/jsimport) measures them:
+A call through `//goesm:import` costs a few nanoseconds more than a call from JavaScript to the same function when the arguments are numbers, ASCII strings or structs of such fields. The same call through `syscall/js` costs 20 to 50 ns more with numbers and strings, and 8 to 50 times as much with a slice or a struct, which `syscall/js` code builds one element or property at a time ([dom.md](/reference/dom/#performance)). [bench/jsimport](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.3/bench/jsimport) measures them:
 
 | Call | JS → JS | Go → JS, `//goesm:import` | Go → JS, `syscall/js` |
 | --- | ---: | ---: | ---: |
-| `add(int, int) int` | 2.2 ns | 3.0 ns | 163 ns |
-| `strlen(string) int`, ASCII | 2.6 ns | 7.8 ns | 146 ns |
-| `strlen(string) int`, Japanese | 5.0 ns | 117 ns | 317 ns |
-| `upper(string) string`, ASCII | 30 ns | 48 ns | 280 ns |
-| `total(struct) int` | 7.3 ns | 5.3 ns | 840 ns |
-| `sum([]float64) float64`, 8 elements | 17 ns | 37 ns | 1,406 ns |
+| `add(int, int) int` | 2.6 ns | 3.1 ns | 23 ns |
+| `strlen(string) int`, ASCII | 2.9 ns | 9.1 ns | 36 ns |
+| `strlen(string) int`, Japanese | 5.3 ns | 124 ns | 158 ns |
+| `upper(string) string`, ASCII | 29 ns | 44 ns | 83 ns |
+| `total(struct) int` | 8.1 ns | 5.0 ns | 238 ns |
+| `sum([]float64) float64`, 8 elements | 18 ns | 35 ns | 303 ns |
 
-Node.js 22 on a 4 vCPU Intel Xeon 2.80 GHz cloud VM. On Bun, calls with numbers and strings cost about the same, and calls with a struct or a slice about twice as much. A string with non-ASCII characters is re-encoded between UTF-8 and UTF-16 each way, which is the remaining cost; slices are copied element by element.
+Node.js 22 on a 4 vCPU Intel Xeon 2.10 GHz cloud VM, the median of 7 runs. On Bun, calls with numbers and strings cost about the same, and calls with a struct or a slice two to four times as much. A string with non-ASCII characters is re-encoded between UTF-8 and UTF-16 each way, which is the remaining cost; slices are copied element by element.
 
 ## Limitations
 

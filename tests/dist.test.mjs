@@ -99,6 +99,15 @@ test("every page has the favicon, touch icon and manifest", () => {
   for (const f of ["favicon.ico", "apple-touch-icon.png"]) assert.ok(existsSync(new URL(f, dist)), f);
 });
 
+test("the navbar logo is the goesm icon and every stylesheet image exists", () => {
+  // The stylesheet is inlined into each page.
+  for (const r of ["/", "/gosfc/ja/"]) {
+    const css = [...page(r).matchAll(/<style>([\s\S]*?)<\/style>/g)].map((m) => m[1]).join("\n");
+    assert.match(css, /url\("?\/brand-mark\.png"?\)/, r);
+    for (const [, u] of css.matchAll(/url\("?(\/[^")]+)"?\)/g)) assert.ok(existsSync(new URL(u.slice(1), dist)), `${r}: ${u}`);
+  }
+});
+
 test("doc pages are rendered at build time", () => {
   const html = page("/guide/getting-started/");
   assert.match(html, /<h2 id="install" tabindex="-1">Install/);

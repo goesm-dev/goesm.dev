@@ -1,6 +1,6 @@
 <!-- Synced by cmd/syncdocs. Edit the source instead. -->
 
-goesm には Go のツールチェーン（Go 1.27 以降。古い `go` は `GOTOOLCHAIN` で 1.27 を自動でダウンロードします）が必要です。Node.js や npm は不要です。ランタイム（`@goesm/runtime`）はバイナリに埋め込まれていて、出力に書き出されます。
+goesm には Go 1.27 以降のツールチェーンが必要です。それより古い `go` は、`GOTOOLCHAIN` の仕組みで Go 1.27 を自動でダウンロードします。Node.js や npm は不要です。ランタイムの `@goesm/runtime` は goesm のバイナリに埋め込まれていて、出力に書き出されます。
 
 自分のモジュールのツールとして追加すると、自分のコードと同じツールチェーンでビルドされます。
 
@@ -15,4 +15,4 @@ go tool goesm emit-ts ./cart     # goesm-ts/<cart の import パス>.ts + goesm-
 go install github.com/goesm-dev/goesm/cmd/goesm@latest
 ```
 
-ビルド済みバイナリはありません。goesm はどのみち `go` を実行しますし、自分のツールチェーンでビルドすれば goesm の go/types がモジュールの使う Go と揃います。実験段階の間、リリースは `v0.0.1-beta.N` という名前のプレリリースです（[GitHub Releases](https://github.com/goesm-dev/goesm/releases)）。`@latest` は最新のものを指します。`goesm version` で goesm のバージョンと、ビルドに使った Go を表示します。
+ビルド済みのバイナリは配布していません。goesm は動作中に必ず `go` を実行するので、Go のツールチェーンはいずれにしても必要です。また、自分のツールチェーンで goesm をビルドすると、goesm の go/types がモジュールの使う Go と同じバージョンになります。実験段階の間、リリースは `v0.0.1-beta.N` という名前のプレリリースとして [GitHub Releases](https://github.com/goesm-dev/goesm/releases) で公開します。`@latest` は最新のリリースを指します。`goesm version` は、goesm のバージョンと、goesm のビルドに使った Go のバージョンを表示します。

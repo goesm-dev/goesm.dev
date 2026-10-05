@@ -23,7 +23,7 @@ Thanks for helping. goesm is experimental, so issues that show a Go program beha
 
 ```sh
 mise install
-npm ci --prefix test   # tsc and oxlint, pinned in test/package.json
+npm ci --prefix test   # tsc, oxlint and workerd, pinned in test/package.json
 ```
 
 Without mise you need Go 1.27+ and Node.js 22.18+; Bun is optional. When you change a tool version, pin an exact version (never `latest`) in `mise.toml` or `test/package.json`.
@@ -40,14 +40,18 @@ go test ./...
 | `TestJS` | `test/js/*.test.mjs` (node:test) against built bundles |
 | `TestKnownGaps` | the documented differences from native Go still exist (`testdata/semantics/gaps`) |
 | `TestExamples` | `examples/*` run under Node.js, and Bun when it is installed, and print their `output.txt` |
-| `TestTSC` | the emitted TypeScript type-checks with strict `tsc` |
+| `TestTSC` | the emitted TypeScript type-checks with strict `tsc` once its `@ts-nocheck` header is removed, and TypeScript callers see the Go types with the header in place |
 | `TestOxlint` | the built ESM has no oxlint correctness findings |
 | `TestPrograms` | the commands in `testdata/programs` print the same output and exit with the same status under native Go and goesm (Node.js and Bun) |
 | `TestToolexec` | a `-toolexec` program's rewrites of a module and of the standard library reach goesm's output as they reach `go build`'s (`testdata/toolexec`) |
 | `TestFetch` | HTTP clients use `fetch`, also through a Transport with a plain `net.Dialer`, and a custom dialer is still called (`testdata/fetch`, against a local server) |
+| `TestUseCase*` | the use cases of [docs/use-cases.md](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.1/docs/use-cases.md) (`testdata/usecases`) behave as natively: command-line tools, a build tool, SSR, popular libraries, an HTTP and Connect server under `http.ListenAndServe` (Node.js and Bun) and as a Cloudflare Workers fetch handler (workerd) |
 | `TestStdlibStatus -v` | reports which standard library packages lower and how many functions are stubs |
+| `TestModuleCache*` | modules taken from the module cache are byte for byte the ones lowering produces, and a change of whole-program facts re-lowers the dependencies it affects (see ARCHITECTURE.md) |
 
 `TestTSC` and `TestOxlint` skip when `npm ci --prefix test` has not been run; CI sets `GOESM_REQUIRE_TOOLS=1` so they cannot be skipped there. CI also checks `gofmt -l .` and `go vet ./...`.
+
+The tests in `test/` share one module cache in a temporary directory, so most of them take the standard library's modules from it. Set `GOESMCACHE=off` to lower every package anew, or `GOESMCACHE=<dir>` to keep the cache between runs.
 
 ### otelc
 
@@ -88,4 +92,4 @@ See [docs/conformance.md](/reference/conformance/) for the variables, the baseli
 
 ## License
 
-goesm is released under the [BSD 3-Clause License](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.0/LICENSE). By contributing, you agree that your contributions are licensed under it.
+goesm is released under the [BSD 3-Clause License](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.1/LICENSE). By contributing, you agree that your contributions are licensed under it.

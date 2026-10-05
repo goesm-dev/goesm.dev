@@ -45,6 +45,10 @@ Result(); // 3
 
 The output is ES modules with a `.js` extension. Under Node.js, load them from a package whose `package.json` says `"type": "module"`: otherwise Node.js parses each module a second time to detect its format, which for a large bundle adds tens of milliseconds to startup.
 
+### Rebuilds
+
+goesm keeps the TypeScript module of every package it lowers in a cache, `goesm/modules` in the user cache directory. `GOESMCACHE` moves the cache, and `GOESMCACHE=off` disables it. A rebuild lowers only the packages whose module can have changed: the edited packages, the packages that depend on them, and the packages whose whole-program analysis results the edit changed, such as a function of a dependency that now has to await a callback. The output is the same with and without the cache. For the `site` package of goesm.dev, which has 77 packages, `emit-ts` takes 1.2 s without the cache and 0.7 s after editing one package; the Go frontend and the whole-program analysis take the rest.
+
 ### Calling Go from JavaScript
 
 - Exported functions and types are exports of the package's module, with their Go types in TypeScript (`Total(items: $rt.S<Item>): number`).
@@ -52,4 +56,21 @@ The output is ES modules with a `.js` extension. Under Node.js, load them from a
 - Go strings are byte strings: `rt.fromJSString(s)` in, `rt.toJSString(s)` out. Slices: `rt.sliceLit([...])` in, `rt.toArray(s)` out. Multiple results come back as an array, and an `error` as a Go interface value.
 - A function that may block (channel operations, `time.Sleep`, waiting on a mutex) is an `async function` and returns a Promise; the others are synchronous.
 
-`rt` is the runtime, which every module re-exports as `$runtime`. [examples/](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.0/examples) has runnable examples (the cart, standard library use, goroutines) with the JavaScript that calls them.
+`rt` is the runtime, which every module re-exports as `$runtime`. [examples/](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.1/examples) has runnable examples (the cart, standard library use, goroutines) with the JavaScript that calls them.
+
+### Serving HTTP
+
+An `http.Handler` (a `ServeMux`, a Connect service, middleware) serves requests on every host, through the host's own server:
+
+```go
+// Node.js, Bun and Deno: the host's HTTP server (node:http, Bun.serve, Deno.serve) runs it.
+log.Fatal(http.ListenAndServe(":8080", api.Handler()))
+```
+
+```ts
+// Cloudflare Workers (and Deno.serve, Bun.serve, service workers): a fetch handler.
+import { Handler, $runtime as rt } from "./goesm-ts/example.com/app/api.ts";
+export default { fetch: rt.fetchHandler(Handler()) };
+```
+
+Each request runs in its own goroutine, its body read in full first; the response is sent when the handler returns, or streams from its first flush (Server-Sent Events, Connect's server streaming). Under Workers, `os.Getenv` reads the Worker's text bindings and secrets with the `nodejs_compat` flag. The HTTP client is `fetch`. [docs/use-cases.md](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.1/docs/use-cases.md) lists what is supported where.

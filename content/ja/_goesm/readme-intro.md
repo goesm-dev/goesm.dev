@@ -1,11 +1,11 @@
 <!-- Synced by cmd/syncdocs. Edit the source instead. -->
 
-Go のパッケージを、ネイティブな ES モジュールにコンパイルします。出力は素の JavaScript（TypeScript として出力）で、WebAssembly は使いません。
+Go のパッケージを、ネイティブな ES モジュールにコンパイルします。出力は TypeScript で、WebAssembly は使いません。
 
-goesm は、普通の Go モジュールにある普通の Go パッケージを、パッケージごとに 1 つの ES モジュールに変換します。Vite、Rolldown、esbuild、Bun、Node.js、ブラウザからそのまま import できます。export された Go の関数は JavaScript の関数に、export された型は TypeScript の型付きのクラスになります。Go の意味論（整数演算、スライス、マップ、インターフェース、goroutine、`defer` / `panic` / `recover`、ジェネリクス、リフレクション）は保たれ、ネイティブ Go と突き合わせて検証しています。
+goesm は、普通の Go モジュールにある普通の Go パッケージを、パッケージごとに 1 つの ES モジュールに変換します。Vite、Rolldown、esbuild、Bun、Node.js、ブラウザからそのまま import できます。export された Go の関数は JavaScript の関数に、export された型は TypeScript の型を持つクラスになります。整数演算、スライス、マップ、インターフェース、goroutine、`defer` / `panic` / `recover`、ジェネリクス、リフレクションは Go と同じ意味で動き、その結果はネイティブ Go と突き合わせて検証しています。
 
 > [!NOTE]
-> goesm は実験段階です。現時点で動くもの・動かないものは[現状](/ja/guide/status/)を参照してください。
+> goesm は実験段階です。現時点で動くものと動かないものは、[現状](/ja/guide/status/)を参照してください。
 
 ```go
 package cart

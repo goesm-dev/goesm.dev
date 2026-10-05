@@ -32,7 +32,7 @@ features:
     details: フロントエンドは go/packages と go/types です。go.mod、gopls、go vet、go test は同じコードでそのまま動きます。
   - icon: 🧩
     title: Vue と Astro
-    details: gosfc を使うと、Vue コンポーネントの <script setup lang="go"> で本物の Go が動き、Astro のページからも Go のパッケージを直接 import できます。
+    details: gosfc を使うと、Vue コンポーネントの <script setup lang="go"> と .astro ファイルの ---go のフロントマターで本物の Go が動きます。
     link: /guide/vue
   - icon: 🔭
     title: ゼロコード計装

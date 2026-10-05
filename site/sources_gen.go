@@ -5,5 +5,5 @@ package site
 // Revisions of the synced documentation.
 const (
 	goesmRef = "v0.0.1-beta.3"                            // github.com/goesm-dev/goesm v0.0.1-beta.3
-	gosfcRef = "e92e0480ce7e072147c8365cc28a892ed4d2a55d" // github.com/goesm-dev/gosfc v0.0.0-20261005163215-e92e0480ce7e
+	gosfcRef = "4f0689be9e96e6d62a37f0dd7d2245e5aaf69ecf" // github.com/goesm-dev/gosfc v0.0.0-20261005171715-4f0689be9e96
 )

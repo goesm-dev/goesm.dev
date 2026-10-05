@@ -85,7 +85,12 @@ type Head struct {
 	LLMs        string         `json:"llms"`     // URL of the locale's llms.txt
 	Home        string         `json:"home"`
 	Social      []press.Social `json:"social"`
+	// SiteRepo is this site's own repository, linked from the footer; the
+	// navbar's GitHub icon points to goesm or gosfc.
+	SiteRepo string `json:"siteRepo"`
 }
+
+const siteRepo = "https://github.com/goesm-dev/goesm.dev"
 
 type altLink struct {
 	Lang string `json:"lang"`
@@ -98,16 +103,17 @@ func HeadJSON(r string) string {
 	s := siteOf(r)
 	loc := s.LocaleOf(r)
 	h := Head{
-		Site:   loc.Title,
-		Lang:   loc.Lang,
-		Locale: loc.Code,
-		UI:     loc.UI,
-		Search: s.Config.Base + "/search/" + loc.Code + ".txt",
-		LLMs:   s.LLMsPath(loc, false),
-		Home:   s.Home(loc),
-		Social: s.Config.Social,
-		Title:  loc.UI.NotFound + " | " + loc.Title,
-		Layout: "page",
+		Site:     loc.Title,
+		Lang:     loc.Lang,
+		Locale:   loc.Code,
+		UI:       loc.UI,
+		Search:   s.Config.Base + "/search/" + loc.Code + ".txt",
+		LLMs:     s.LLMsPath(loc, false),
+		Home:     s.Home(loc),
+		Social:   s.Config.Social,
+		SiteRepo: siteRepo,
+		Title:    loc.UI.NotFound + " | " + loc.Title,
+		Layout:   "page",
 	}
 	p := s.Page(r)
 	if p == nil {

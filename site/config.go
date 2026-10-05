@@ -60,6 +60,7 @@ var en = &press.Locale{
 		CopyCode:      "Copy code",
 		Copied:        "Copied",
 		Footer:        "Released under the BSD 3-Clause License. This site is built with goesm, gosfc, Astro and Vue.",
+		SiteSource:    "Source of this site",
 		ViewMarkdown:  "View as Markdown",
 		OtherPages:    "Other pages",
 		Containers: map[string]string{
@@ -102,6 +103,7 @@ var ja = &press.Locale{
 		CopyCode:      "コードをコピー",
 		Copied:        "コピーしました",
 		Footer:        "BSD 3-Clause License で公開しています。このサイトは goesm、gosfc、Astro、Vue で作られています。",
+		SiteSource:    "このサイトのソース",
 		ViewMarkdown:  "Markdown で表示",
 		OtherPages:    "その他のページ",
 		Containers: map[string]string{

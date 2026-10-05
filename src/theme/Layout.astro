@@ -89,6 +89,7 @@ const isDoc = head.found && head.layout === "doc";
     }
     <footer class="site-footer">
       <p>{ui.footer}</p>
+      <p><a href={head.siteRepo}>{ui.siteSource}</a></p>
     </footer>
     <Enhance client:idle copied={ui.copied} />
   </body>

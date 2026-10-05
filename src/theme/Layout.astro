@@ -19,6 +19,9 @@ const { route } = Astro.props;
 const head = JSON.parse(rt.toJSString(HeadJSON(rt.fromJSString(route))));
 const ui = head.ui;
 const isDoc = head.found && head.layout === "doc";
+// goesm and gosfc are names: browser translation turned them into words
+// ("gomesm"), so the footer marks them translate="no".
+const footer = (ui.footer as string).split(/\b(goesm|gosfc)\b/);
 ---
 
 <!doctype html>
@@ -36,7 +39,9 @@ const isDoc = head.found && head.layout === "doc";
     <meta property="og:type" content="website" />
     {head.canonical && <meta property="og:url" content={head.canonical} />}
     <meta property="og:image" content="https://goesm.dev/goesm.png" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href={head.site === "gosfc" ? "/gosfc/site.webmanifest" : "/site.webmanifest"} />
     <link rel="sitemap" href="/sitemap.xml" />
     {head.markdown && <link rel="alternate" type="text/markdown" href={head.markdown} />}
     <script is:inline>
@@ -88,7 +93,7 @@ const isDoc = head.found && head.layout === "doc";
       )
     }
     <footer class="site-footer">
-      <p>{ui.footer}</p>
+      <p>{footer.map((part, i) => (i % 2 ? <span translate="no">{part}</span> : part))}</p>
       <p><a href={head.siteRepo}>{ui.siteSource}</a></p>
     </footer>
     <Enhance client:idle copied={ui.copied} />

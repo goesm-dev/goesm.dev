@@ -6,7 +6,7 @@
       </label>
       <a class="brand" :href="bar.home">
         <span class="brand-mark" aria-hidden="true"></span>
-        <span class="brand-name">{{ bar.title }}</span>
+        <span class="brand-name" translate="no">{{ bar.title }}</span>
       </a>
       <div class="navbar-search"><slot name="search" /></div>
       <nav class="navbar-links" aria-label="Main">

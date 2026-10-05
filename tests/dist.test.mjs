@@ -41,7 +41,7 @@ test("the gosfc site is its own site", () => {
   assert.ok(routes.filter((r) => r.startsWith("/gosfc/")).length >= 16, "gosfc pages missing from the sitemap");
   const html = page("/gosfc/guide/go-block/");
   assert.match(html, /<title>Writing the Go block \| gosfc<\/title>/);
-  assert.match(html, /<span class="brand-name">gosfc<\/span>/);
+  assert.match(html, /<span class="brand-name" translate="no">gosfc<\/span>/);
   assert.match(html, /href="https:\/\/github\.com\/goesm-dev\/gosfc"/);
   assert.match(page("/guide/"), /<a href="\/gosfc\/"[^>]*>gosfc</);
   // The navbar's GitHub icon is the tool's repository; the footer links the site's own.
@@ -79,6 +79,24 @@ test("each site and language has an llms.txt", () => {
     for (const l of links) assert.ok(existsSync(new URL(l.slice("https://goesm.dev/".length), dist)), l);
     assert.ok(read(dir + "llms-full.txt").length > 20_000, `${dir}llms-full.txt`);
   }
+});
+
+test("every page has the favicon, touch icon and manifest", () => {
+  for (const r of ["/", "/ja/guide/", "/gosfc/", "/gosfc/ja/guide/go-block/"]) {
+    const html = page(r);
+    assert.ok(html.includes('<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">'), r);
+    assert.ok(html.includes('<link rel="apple-touch-icon" href="/apple-touch-icon.png">'), r);
+    const manifest = r.startsWith("/gosfc/") ? "/gosfc/site.webmanifest" : "/site.webmanifest";
+    assert.ok(html.includes(`<link rel="manifest" href="${manifest}">`), r);
+  }
+  // Each site installs as itself: gosfc starts at /gosfc/.
+  for (const [file, name, start] of [["site.webmanifest", "goesm", "/"], ["gosfc/site.webmanifest", "gosfc", "/gosfc/"]]) {
+    const manifest = JSON.parse(read(file));
+    assert.equal(manifest.name, name, file);
+    assert.equal(manifest.start_url, start, file);
+    for (const icon of manifest.icons) assert.ok(existsSync(new URL(icon.src.slice(1), dist)), icon.src);
+  }
+  for (const f of ["favicon.ico", "apple-touch-icon.png"]) assert.ok(existsSync(new URL(f, dist)), f);
 });
 
 test("doc pages are rendered at build time", () => {

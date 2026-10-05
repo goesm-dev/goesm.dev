@@ -81,6 +81,18 @@ test("each site and language has an llms.txt", () => {
   }
 });
 
+test("every page has the favicon, touch icon and manifest", () => {
+  for (const r of ["/", "/ja/guide/", "/gosfc/", "/gosfc/ja/guide/go-block/"]) {
+    const html = page(r);
+    assert.ok(html.includes('<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">'), r);
+    assert.ok(html.includes('<link rel="apple-touch-icon" href="/apple-touch-icon.png">'), r);
+    assert.ok(html.includes('<link rel="manifest" href="/site.webmanifest">'), r);
+  }
+  const manifest = JSON.parse(read("site.webmanifest"));
+  for (const icon of manifest.icons) assert.ok(existsSync(new URL(icon.src.slice(1), dist)), icon.src);
+  for (const f of ["favicon.ico", "apple-touch-icon.png"]) assert.ok(existsSync(new URL(f, dist)), f);
+});
+
 test("doc pages are rendered at build time", () => {
   const html = page("/guide/getting-started/");
   assert.match(html, /<h2 id="install" tabindex="-1">Install/);

@@ -1,0 +1,14 @@
+{
+  "name": "goesm",
+  "short_name": "goesm",
+  "description": "Compile Go packages into native ES modules: plain JavaScript, no WebAssembly.",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#000000",
+  "theme_color": "#0b0f1a",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

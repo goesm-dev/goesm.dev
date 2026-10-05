@@ -4,6 +4,8 @@ github.com/goesm-dev/goesm v0.0.1-beta.0 h1:noIUTp8jkX1uUHOpa3x9+g6mjvfdRMSj4DyB
 github.com/goesm-dev/goesm v0.0.1-beta.0/go.mod h1:XAlhRWFsSZvLXYuyxnHhUmkUXiFCMSuX1ChG7f4bPQE=
 github.com/goesm-dev/gosfc v0.0.0-20261004190310-60ac235c2d53 h1:cna8rZRCYQ4EEQZcDZ/8tg+4NjkqkkpHIYD0Y9EC0gw=
 github.com/goesm-dev/gosfc v0.0.0-20261004190310-60ac235c2d53/go.mod h1:1nPrdPVxe+50s7tg87DebLUbDSSJxXpH4tQ/Y5OcA0k=
+github.com/goesm-dev/gosfc v0.0.0-20261005011624-039468bc67cf h1:Lzd53gnnBmYcN/bTUbAQ8BS0lgHoHYXS4F1Ep+iSfIk=
+github.com/goesm-dev/gosfc v0.0.0-20261005011624-039468bc67cf/go.mod h1:1nPrdPVxe+50s7tg87DebLUbDSSJxXpH4tQ/Y5OcA0k=
 github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=
 github.com/google/go-cmp v0.6.0/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
 github.com/yuin/goldmark v1.8.6 h1:d0VcaP1sx9GkFVkoW+KtggpGi2KZ965i14b0+bDQST4=

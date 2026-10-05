@@ -40,11 +40,16 @@ type renderEnv struct {
 
 var envKey = parser.NewContextKey()
 
-func newMarkdown() goldmark.Markdown {
+// newMarkdown returns the Markdown converter. With eastAsian, a line break
+// between two Japanese characters is not a space; between a Japanese
+// character and a Latin one it stays one ("Go の" is written with a space).
+func newMarkdown(eastAsian bool) goldmark.Markdown {
+	exts := []goldmark.Extender{extension.Table, extension.Strikethrough, extension.Linkify}
+	if eastAsian {
+		exts = append(exts, extension.NewCJK(extension.WithEastAsianLineBreaks(extension.EastAsianLineBreaksSimple)))
+	}
 	return goldmark.New(
-		goldmark.WithExtensions(extension.Table, extension.Strikethrough, extension.Linkify,
-			// A line break between Japanese characters is not a space.
-			extension.NewCJK(extension.WithEastAsianLineBreaks(extension.EastAsianLineBreaksCSS3Draft))),
+		goldmark.WithExtensions(exts...),
 		goldmark.WithParserOptions(
 			parser.WithBlockParsers(util.Prioritized(&containerParser{}, 50)),
 			parser.WithASTTransformers(
@@ -60,15 +65,26 @@ func newMarkdown() goldmark.Markdown {
 	)
 }
 
+// isEastAsian reports whether a language is written without spaces between
+// words, so that a line break inside a paragraph must not become one.
+func isEastAsian(lang string) bool {
+	base, _, _ := strings.Cut(lang, "-")
+	return base == "ja" || base == "zh" || base == "ko"
+}
+
 // render converts the Markdown body of p to HTML.
 func (s *Site) render(p *Page, body string) (string, []Heading, []section) {
 	env := &renderEnv{site: s, page: p, slugs: map[string]int{}}
 	ctx := parser.NewContext()
 	ctx.Set(envKey, env)
 	src := []byte(body)
-	doc := s.md.Parser().Parse(text.NewReader(src), parser.WithContext(ctx))
+	md := s.md
+	if isEastAsian(p.Locale.Lang) {
+		md = s.mdEastAsian
+	}
+	doc := md.Parser().Parse(text.NewReader(src), parser.WithContext(ctx))
 	var buf bytes.Buffer
-	if err := s.md.Renderer().Render(&buf, src, doc); err != nil {
+	if err := md.Renderer().Render(&buf, src, doc); err != nil {
 		return "<pre>" + escapeHTML(err.Error()) + "</pre>", nil, nil
 	}
 	return buf.String(), env.headings, sections(doc, src)

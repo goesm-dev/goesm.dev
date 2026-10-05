@@ -2,7 +2,8 @@
 
 [日本語](README.ja.md)
 
-The website of [goesm](https://github.com/goesm-dev/goesm), built with goesm
+The website of [goesm](https://github.com/goesm-dev/goesm) and, at
+`/gosfc/`, of [gosfc](https://github.com/goesm-dev/gosfc), built with goesm
 itself: a VitePress-style documentation engine written in Go, compiled by goesm,
 and rendered by Astro and Vue through [gosfc](https://github.com/goesm-dev/gosfc).
 How it fits together is explained on the site, in
@@ -13,8 +14,9 @@ How it fits together is explained on the site, in
 | Path | What it is |
 | --- | --- |
 | `press/` | the engine: Markdown (goldmark), containers, highlighting, sidebars, locales, search index, sitemap |
-| `site/` | the site's configuration and the functions the pages call |
-| `content/en`, `content/ja` | the pages, in Markdown |
+| `site/` | the configuration of both sites and the functions the pages call |
+| `content/en`, `content/ja` | the goesm pages, in Markdown |
+| `content/gosfc/en`, `content/gosfc/ja` | the gosfc pages, served under `/gosfc/` |
 | `client/` | Go that runs in the browser (search, live demo, page enhancements) |
 | `src/` | Astro pages and the Vue theme; the components' `<script setup>` is Go |
 | `cmd/syncdocs` | copies the goesm and gosfc docs at the versions in `go.mod` |

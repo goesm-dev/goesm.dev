@@ -1,5 +1,6 @@
 // Checks of the built site (run `pnpm build` first): every page the engine
-// lists is there, in both languages, with its head and the Go islands.
+// lists is there, on both sites (goesm and gosfc) and in both languages,
+// with its head and the Go islands.
 import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { test } from "node:test";
@@ -11,6 +12,10 @@ const page = (route) => read(route.slice(1) + "index.html");
 const sitemap = existsSync(new URL("sitemap.xml", dist)) ? read("sitemap.xml") : "";
 const routes = [...sitemap.matchAll(/<loc>https:\/\/goesm\.dev([^<]*)<\/loc>/g)].map((m) => m[1]);
 
+// The Japanese route of an English one: /ja/x/ on goesm, /gosfc/ja/x/ on gosfc.
+const japanese = (r) => (r.startsWith("/gosfc/") ? "/gosfc/ja" + r.slice("/gosfc".length) : "/ja" + r);
+const isJapanese = (r) => r.startsWith("/ja/") || r.startsWith("/gosfc/ja/");
+
 test("the site is built", () => {
   assert.ok(routes.length > 20, "run pnpm build first");
 });
@@ -20,20 +25,32 @@ test("every page has a title, a canonical link and its alternates", () => {
     const html = page(r);
     assert.match(html, /<title>[^<]+<\/title>/, r);
     assert.ok(html.includes(`<link rel="canonical" href="https://goesm.dev${r}">`), `${r}: canonical`);
-    assert.match(html, new RegExp(`<html lang="${r.startsWith("/ja/") ? "ja" : "en"}"`), r);
+    assert.match(html, new RegExp(`<html lang="${isJapanese(r) ? "ja" : "en"}"`), r);
     assert.ok(!html.includes("<!--@include"), `${r}: include left unexpanded`);
   }
 });
 
 test("pages exist in both languages", () => {
-  const en = routes.filter((r) => !r.startsWith("/ja/"));
-  for (const r of en) assert.ok(routes.includes("/ja" + r), `no Japanese page for ${r}`);
+  const en = routes.filter((r) => !isJapanese(r));
+  for (const r of en) assert.ok(routes.includes(japanese(r)), `no Japanese page for ${r}`);
   assert.match(page("/ja/guide/"), /hreflang="en" href="https:\/\/goesm\.dev\/guide\/"/);
+  assert.match(page("/gosfc/ja/guide/"), /hreflang="en" href="https:\/\/goesm\.dev\/gosfc\/guide\/"/);
+});
+
+test("the gosfc site is its own site", () => {
+  assert.ok(routes.filter((r) => r.startsWith("/gosfc/")).length >= 16, "gosfc pages missing from the sitemap");
+  const html = page("/gosfc/guide/go-block/");
+  assert.match(html, /<title>Writing the Go block \| gosfc<\/title>/);
+  assert.match(html, /<span class="brand-name">gosfc<\/span>/);
+  assert.match(html, /href="https:\/\/github\.com\/goesm-dev\/gosfc"/);
+  assert.match(page("/guide/"), /<a href="\/gosfc\/"[^>]*>gosfc</);
 });
 
 test("each locale has a 404.html where Cloudflare looks for it", () => {
   assert.match(read("404.html"), /<html lang="en"/);
   assert.match(read("ja/404.html"), /<html lang="ja"/);
+  assert.match(read("gosfc/404.html"), /<html lang="en"[\s\S]*href="\/gosfc\/"/);
+  assert.match(read("gosfc/ja/404.html"), /<html lang="ja"[\s\S]*href="\/gosfc\/ja\/"/);
 });
 
 test("doc pages are rendered at build time", () => {
@@ -45,9 +62,9 @@ test("doc pages are rendered at build time", () => {
 });
 
 test("search indexes cover both languages", () => {
-  for (const l of ["en", "ja"]) {
-    const lines = read(`search/${l}.txt`).trim().split("\n");
-    assert.ok(lines.length > 50, `${l}: ${lines.length} records`);
+  for (const [index, min] of [["search/en", 50], ["search/ja", 50], ["gosfc/search/en", 20], ["gosfc/search/ja", 20]]) {
+    const lines = read(`${index}.txt`).trim().split("\n");
+    assert.ok(lines.length > min, `${index}: ${lines.length} records`);
     for (const line of lines) assert.equal(line.split("\x1f").length, 4, line);
   }
 });
@@ -55,7 +72,7 @@ test("search indexes cover both languages", () => {
 test("the first paint needs no request after the HTML", () => {
   // Inlined CSS: on a slow connection each extra request before the first
   // paint costs a full round trip.
-  for (const r of ["/", "/ja/guide/", "/reference/architecture/"]) {
+  for (const r of ["/", "/ja/guide/", "/reference/architecture/", "/gosfc/", "/gosfc/ja/guide/go-block/"]) {
     const html = page(r);
     assert.doesNotMatch(html, /<link rel="stylesheet"/, r);
     assert.match(html, /<style>/, r);

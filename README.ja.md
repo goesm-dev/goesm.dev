@@ -2,7 +2,8 @@
 
 [English](README.md)
 
-[goesm](https://github.com/goesm-dev/goesm) のウェブサイトです。goesm 自身で作っています。
+[goesm](https://github.com/goesm-dev/goesm) と、`/gosfc/` 以下の [gosfc](https://github.com/goesm-dev/gosfc)
+のウェブサイトです。goesm 自身で作っています。
 Go で書いた VitePress 風のドキュメントエンジンを goesm でコンパイルし、
 [gosfc](https://github.com/goesm-dev/gosfc) を通して Astro と Vue で描画します。
 全体の仕組みはサイトの [このサイトの作り方](content/ja/guide/this-site.md) で説明しています。
@@ -12,8 +13,9 @@ Go で書いた VitePress 風のドキュメントエンジンを goesm でコ�
 | パス | 内容 |
 | --- | --- |
 | `press/` | エンジン: Markdown (goldmark)、コンテナ、ハイライト、サイドバー、ロケール、検索インデックス、サイトマップ |
-| `site/` | サイトの設定と、ページから呼ぶ関数 |
-| `content/en`、`content/ja` | ページ (Markdown) |
+| `site/` | 2 つのサイトの設定と、ページから呼ぶ関数 |
+| `content/en`、`content/ja` | goesm のページ (Markdown) |
+| `content/gosfc/en`、`content/gosfc/ja` | gosfc のページ (`/gosfc/` 以下) |
 | `client/` | ブラウザで動く Go (検索、ライブデモ、ページの補助) |
 | `src/` | Astro のページと Vue のテーマ。コンポーネントの `<script setup>` は Go |
 | `cmd/syncdocs` | goesm と gosfc のドキュメントを `go.mod` のバージョンでコピー |

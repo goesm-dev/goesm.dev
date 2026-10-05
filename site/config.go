@@ -38,6 +38,7 @@ var en = &press.Locale{
 		{Text: "Guide", Link: "/guide/", Match: "/guide/"},
 		{Text: "Reference", Link: "/reference/architecture", Match: "/reference/"},
 		{Text: "Performance", Link: "/guide/performance"},
+		{Text: "gosfc", Link: "/gosfc/", Root: true},
 		{Text: "Releases", Link: "https://github.com/goesm-dev/goesm/releases"},
 	},
 	UI: press.UI{
@@ -77,6 +78,7 @@ var ja = &press.Locale{
 		{Text: "ガイド", Link: "/guide/", Match: "/guide/"},
 		{Text: "リファレンス", Link: "/reference/architecture", Match: "/reference/"},
 		{Text: "性能", Link: "/guide/performance"},
+		{Text: "gosfc", Link: "/gosfc/ja/", Root: true},
 		{Text: "リリース", Link: "https://github.com/goesm-dev/goesm/releases"},
 	},
 	UI: press.UI{
@@ -121,7 +123,6 @@ var config = &press.Config{
 	EditBase: "https://github.com/goesm-dev/goesm.dev/edit/main/content/",
 	Sources: map[string]press.Source{
 		"goesm": {Repo: "https://github.com/goesm-dev/goesm", Ref: goesmRef, Assets: "/repo/goesm/"},
-		"gosfc": {Repo: "https://github.com/goesm-dev/gosfc", Ref: gosfcRef, Assets: "/repo/gosfc/"},
 	},
 	Social:  []press.Social{{Icon: "github", Link: "https://github.com/goesm-dev/goesm"}},
 	Locales: []*press.Locale{en, ja},

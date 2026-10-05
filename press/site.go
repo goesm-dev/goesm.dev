@@ -19,13 +19,15 @@ import (
 
 // Site is a loaded content tree.
 type Site struct {
-	Config  *Config
-	fsys    fs.FS
-	md      goldmark.Markdown
-	pages   map[string]*Page // by route
-	byFile  map[string]*Page // by content path ("en/guide/x.md")
-	bySrc   map[string]*Page // by locale code + ":" + source name + ":" + path
-	ordered []*Page
+	Config *Config
+	fsys   fs.FS
+	md     goldmark.Markdown
+	// mdEastAsian renders the pages of Japanese (and similar) locales.
+	mdEastAsian goldmark.Markdown
+	pages       map[string]*Page // by route
+	byFile      map[string]*Page // by content path ("en/guide/x.md")
+	bySrc       map[string]*Page // by locale code + ":" + source name + ":" + path
+	ordered     []*Page
 }
 
 // Page is one Markdown file.
@@ -75,12 +77,13 @@ type Feature struct {
 // included).
 func Load(fsys fs.FS, cfg *Config) (*Site, error) {
 	s := &Site{
-		Config: cfg,
-		fsys:   fsys,
-		md:     newMarkdown(),
-		pages:  map[string]*Page{},
-		byFile: map[string]*Page{},
-		bySrc:  map[string]*Page{},
+		Config:      cfg,
+		fsys:        fsys,
+		md:          newMarkdown(false),
+		mdEastAsian: newMarkdown(true),
+		pages:       map[string]*Page{},
+		byFile:      map[string]*Page{},
+		bySrc:       map[string]*Page{},
 	}
 	for _, loc := range cfg.Locales {
 		err := fs.WalkDir(fsys, loc.Code, func(p string, d fs.DirEntry, err error) error {
@@ -121,7 +124,7 @@ func (s *Site) add(loc *Locale, file string) error {
 	}
 	p := &Page{
 		File:        file,
-		Route:       routeOf(loc, file),
+		Route:       s.routeOf(loc, file),
 		Locale:      loc,
 		Title:       str(fm, "title"),
 		Description: str(fm, "description"),
@@ -222,23 +225,27 @@ func firstHeading(body string) string {
 }
 
 // routeOf maps a content path to its route: en/guide/x.md -> /guide/x/,
-// en/index.md -> /, ja/guide/index.md -> /ja/guide/.
-func routeOf(loc *Locale, file string) string {
+// en/index.md -> /, ja/guide/index.md -> /ja/guide/ (each below Base).
+func (s *Site) routeOf(loc *Locale, file string) string {
 	rel := strings.TrimSuffix(strings.TrimPrefix(file, loc.Code+"/"), ".md")
 	rel = strings.TrimSuffix(rel, "index")
-	r := loc.Prefix + "/" + rel
+	r := s.prefix(loc) + "/" + rel
 	if !strings.HasSuffix(r, "/") {
 		r += "/"
 	}
 	return r
 }
 
-// localLink prefixes a site-relative link with the locale prefix.
+// prefix is what every route of a locale starts with: Base, then the
+// locale's prefix ("/gosfc/ja").
+func (s *Site) prefix(loc *Locale) string { return s.Config.Base + loc.Prefix }
+
+// localLink prefixes a site-relative link with Base and the locale prefix.
 func (s *Site) localLink(loc *Locale, link string) string {
 	if link == "" || strings.Contains(link, "://") || !strings.HasPrefix(link, "/") {
 		return link
 	}
-	return normalizeRoute(loc.Prefix + link)
+	return normalizeRoute(s.prefix(loc) + link)
 }
 
 func normalizeRoute(r string) string {
@@ -260,16 +267,26 @@ func (s *Site) Page(route string) *Page {
 // Pages returns every page, ordered by route.
 func (s *Site) Pages() []*Page { return s.ordered }
 
+// Owns reports whether route is below the site's Base.
+func (s *Site) Owns(route string) bool {
+	b := s.Config.Base
+	return b == "" || route == b || strings.HasPrefix(route, b+"/")
+}
+
 // LocaleOf returns the locale a route belongs to.
 func (s *Site) LocaleOf(route string) *Locale {
 	root := s.Config.Locales[0]
 	for _, l := range s.Config.Locales[1:] {
-		if route == l.Prefix || strings.HasPrefix(route, l.Prefix+"/") {
+		p := s.prefix(l)
+		if route == p || strings.HasPrefix(route, p+"/") {
 			return l
 		}
 	}
 	return root
 }
+
+// Home returns the route of a locale's home page.
+func (s *Site) Home(loc *Locale) string { return s.prefix(loc) + "/" }
 
 // Render returns the page's HTML and outline, rendering it once.
 func (s *Site) Render(p *Page) (string, []Heading) {
@@ -356,14 +373,15 @@ func (s *Site) Nav(route string) []NavLink {
 	for _, n := range loc.Nav {
 		ext := strings.Contains(n.Link, "://")
 		link := n.Link
-		if !ext {
+		if !ext && !n.Root {
 			link = s.localLink(loc, n.Link)
 		}
 		match := n.Match
 		if match == "" {
 			match = n.Link
 		}
-		active := !ext && strings.HasPrefix(route, s.localLink(loc, match))
+		// A link to another site is never the current section.
+		active := !ext && !n.Root && strings.HasPrefix(route, s.localLink(loc, match))
 		out = append(out, NavLink{Text: n.Text, Link: link, Active: active, External: ext})
 	}
 	return out
@@ -379,7 +397,7 @@ type SidebarView struct {
 // longest matching prefix in the route's locale.
 func (s *Site) Sidebar(route string) []SidebarView {
 	loc := s.LocaleOf(route)
-	rel := strings.TrimPrefix(route, loc.Prefix)
+	rel := strings.TrimPrefix(route, s.prefix(loc))
 	best := ""
 	for prefix := range loc.Sidebar {
 		if strings.HasPrefix(rel, prefix) && len(prefix) > len(best) {
@@ -442,13 +460,13 @@ type Alternate struct {
 // Alternates returns route in every locale, in the configured order.
 func (s *Site) Alternates(route string) []Alternate {
 	loc := s.LocaleOf(route)
-	rel := strings.TrimPrefix(route, loc.Prefix)
+	rel := strings.TrimPrefix(route, s.prefix(loc))
 	var out []Alternate
 	for _, l := range s.Config.Locales {
-		link := normalizeRoute(l.Prefix + rel)
+		link := normalizeRoute(s.prefix(l) + rel)
 		exists := s.Page(link) != nil
 		if !exists {
-			link = normalizeRoute(l.Prefix + "/")
+			link = s.Home(l)
 		}
 		out = append(out, Alternate{Label: l.Label, Lang: l.Lang, Link: link, Current: l == loc, Exists: exists})
 	}
@@ -469,10 +487,21 @@ func (s *Site) EditLink(p *Page) (link string, synced bool) {
 }
 
 // Sitemap returns sitemap.xml with hreflang alternates.
-func (s *Site) Sitemap() string {
+func (s *Site) Sitemap() string { return Sitemap(s) }
+
+// Sitemap returns one sitemap.xml for several sites on the same domain.
+func Sitemap(sites ...*Site) string {
 	var b strings.Builder
 	b.WriteString(`<?xml version="1.0" encoding="UTF-8"?>` + "\n")
 	b.WriteString(`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">` + "\n")
+	for _, s := range sites {
+		s.sitemapURLs(&b)
+	}
+	b.WriteString("</urlset>\n")
+	return b.String()
+}
+
+func (s *Site) sitemapURLs(b *strings.Builder) {
 	for _, p := range s.ordered {
 		b.WriteString("  <url>\n    <loc>" + escapeHTML(s.Config.SiteURL+p.Route) + "</loc>\n")
 		for _, a := range s.Alternates(p.Route) {
@@ -482,6 +511,4 @@ func (s *Site) Sitemap() string {
 		}
 		b.WriteString("  </url>\n")
 	}
-	b.WriteString("</urlset>\n")
-	return b.String()
 }

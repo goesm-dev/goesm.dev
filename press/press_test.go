@@ -224,3 +224,81 @@ func TestFrontmatter(t *testing.T) {
 		t.Errorf("list %v", fm["l"])
 	}
 }
+
+func TestBase(t *testing.T) {
+	fsys := fstest.MapFS{
+		"en/index.md":       {Data: []byte("---\nlayout: home\nhero:\n  name: gosfc\n  actions:\n    - text: Start\n      link: /guide/\n---\n")},
+		"en/guide/index.md": {Data: []byte("# What is gosfc?\n\nSee [the goesm guide](/guide/).\n")},
+		"ja/guide/index.md": {Data: []byte("# gosfc とは\n")},
+	}
+	cfg := &Config{
+		SiteURL: "https://goesm.dev",
+		Base:    "/gosfc",
+		Locales: []*Locale{
+			{Code: "en", Prefix: "", Lang: "en", Label: "English",
+				Nav:     []NavItem{{Text: "Guide", Link: "/guide/"}, {Text: "goesm", Link: "/", Root: true}},
+				Sidebar: map[string][]SidebarGroup{"/guide/": {{Text: "Guide", Items: []SidebarItem{{Link: "/guide/"}}}}}},
+			{Code: "ja", Prefix: "/ja", Lang: "ja", Label: "日本語"},
+		},
+	}
+	s, err := Load(fsys, cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var routes []string
+	for _, p := range s.Pages() {
+		routes = append(routes, p.Route)
+	}
+	if got, want := strings.Join(routes, " "), "/gosfc/ /gosfc/guide/ /gosfc/ja/guide/"; got != want {
+		t.Errorf("routes %q, want %q", got, want)
+	}
+	if !s.Owns("/gosfc/ja/") || s.Owns("/gosfcx/") || s.Owns("/guide/") {
+		t.Error("Owns")
+	}
+	if l := s.LocaleOf("/gosfc/ja/guide/"); l.Code != "ja" {
+		t.Errorf("LocaleOf: %s", l.Code)
+	}
+	if got := s.Page("/gosfc/").Hero.Actions[0].Link; got != "/gosfc/guide/" {
+		t.Errorf("hero link %s", got)
+	}
+	nav := s.Nav("/gosfc/guide/")
+	if nav[0].Link != "/gosfc/guide/" || !nav[0].Active || nav[1].Link != "/" || nav[1].Active {
+		t.Errorf("nav %+v", nav)
+	}
+	if sb := s.Sidebar("/gosfc/guide/"); len(sb) != 1 || sb[0].Items[0].Text != "What is gosfc?" || !sb[0].Items[0].Active {
+		t.Errorf("sidebar %+v", sb)
+	}
+	alt := s.Alternates("/gosfc/guide/")
+	if alt[1].Link != "/gosfc/ja/guide/" || !alt[1].Exists {
+		t.Errorf("alternates %+v", alt)
+	}
+	if alt := s.Alternates("/gosfc/"); alt[1].Link != "/gosfc/ja/" || alt[1].Exists {
+		t.Errorf("alternates of home %+v", alt)
+	}
+	// Markdown links starting with / are paths from the origin.
+	if html, _ := s.Render(s.Page("/gosfc/guide/")); !strings.Contains(html, `href="/guide/"`) {
+		t.Errorf("origin link rewritten: %s", html)
+	}
+	if !strings.Contains(Sitemap(s), "<loc>https://goesm.dev/gosfc/guide/</loc>") {
+		t.Error("sitemap")
+	}
+}
+
+// A line break is a space in English, also before a link, and between
+// Japanese and Latin text; it is nothing between Japanese characters.
+func TestLineBreaks(t *testing.T) {
+	fsys := fstest.MapFS{
+		"en/a.md": {Data: []byte("# A\n\nIt renders pages.\n[The architecture](./a.md) has `x`\n`y`.\n")},
+		"ja/a.md": {Data: []byte("# A\n\ngoesm を\nインストールします。Node.js と同時に\nGo も使います。\n")},
+	}
+	s, err := Load(fsys, &Config{Locales: []*Locale{{Code: "en", Lang: "en"}, {Code: "ja", Prefix: "/ja", Lang: "ja"}}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if html, _ := s.Render(s.Page("/a/")); !strings.Contains(html, "pages.\n<a") || !strings.Contains(html, "</code>\n<code>") {
+		t.Errorf("en: %s", html)
+	}
+	if html, _ := s.Render(s.Page("/ja/a/")); !strings.Contains(html, "goesm をインストール") || !strings.Contains(html, "同時に\nGo") {
+		t.Errorf("ja: %s", html)
+	}
+}

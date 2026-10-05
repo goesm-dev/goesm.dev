@@ -5,8 +5,12 @@ on:
   push:
     branches: [main]
   pull_request:
+# Pull requests are grouped by number, not github.ref: a pull_request event
+# that arrives after the merge gets refs/heads/main as its ref, and its
+# cancel-in-progress would cancel main's push run and with it the deploy
+# (as on goesm-dev/goesm#75 and #76).
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   site:

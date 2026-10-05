@@ -173,7 +173,7 @@ button {
   width: 26px;
   height: 26px;
   border-radius: 7px;
-  background: url("/favicon.svg") center / cover;
+  background: #000 url("/brand-mark.png") center / cover;
 }
 
 .navbar-search {

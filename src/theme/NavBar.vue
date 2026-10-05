@@ -17,7 +17,7 @@
           :class="{ active: l.active }"
           :target="l.external ? '_blank' : undefined"
           :rel="l.external ? 'noreferrer' : undefined"
-          >{{ l.text }}<span v-if="l.external" class="external" aria-hidden="true">↗</span></a
+          >{{ l.text }}<svg v-if="l.external" class="external" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path fill="currentColor" d="M9 5v2h6.59L4 18.59 5.41 20 17 8.41V15h2V5z" /></svg></a
         >
       </nav>
       <details class="locale-menu">

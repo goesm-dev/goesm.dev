@@ -187,6 +187,8 @@ button {
 }
 
 .navbar-links a {
+  display: inline-flex;
+  align-items: center;
   padding: 0 10px;
   color: var(--c-text);
   font-size: 14px;
@@ -200,10 +202,13 @@ button {
   text-decoration: none;
 }
 
+/* The arrow after external links. An SVG, not "↗": the glyph comes from
+   whatever fallback font has it, and vertical-align: super pushed the link's
+   text below the others in the navbar. */
 .external {
-  margin-left: 2px;
-  font-size: 11px;
-  vertical-align: super;
+  flex-shrink: 0;
+  margin-left: 3px;
+  vertical-align: -1px;
   color: var(--c-text-3);
 }
 

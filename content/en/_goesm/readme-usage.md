@@ -51,12 +51,12 @@ goesm keeps the TypeScript module of every package it lowers in a cache, `goesm/
 
 ### Calling Go from JavaScript
 
-- Exported functions and types are exports of the package's module, with their Go types in TypeScript (`Total(items: $rt.S<Item>): number`).
-- Numbers and booleans are JS numbers and booleans; `int64` / `uint64` are BigInts. Structs are classes with positional constructors (`new Item(name, price, quantity)`).
-- Go strings are byte strings: `rt.fromJSString(s)` in, `rt.toJSString(s)` out. Slices: `rt.sliceLit([...])` in, `rt.toArray(s)` out. Multiple results come back as an array, and an `error` as a Go interface value.
+- The exported functions of the package you build are exports of its module. They take and return JavaScript values, converted by the Go types: a string is a JS string, a slice an array, a struct a plain object named as `encoding/json` names its fields, and `int64` / `uint64` a BigInt. TypeScript sees those types (`Total(items: Array<{ Name?: string; Price?: number; Quantity?: number }> | null): number`).
+- A pointer to a struct type with methods is the Go object itself, whose methods JavaScript calls (`cart.Add(item)`).
+- Several results come back as an array. A final `error` result is thrown as a `GoError`, which is the Go error again when it is passed back to Go.
 - A function that may block (channel operations, `time.Sleep`, waiting on a mutex) is an `async function` and returns a Promise; the others are synchronous.
 
-`rt` is the runtime, which every module re-exports as `$runtime`. [examples/](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.2/examples) has runnable examples (the cart, standard library use, goroutines) with the JavaScript that calls them.
+[docs/js-exports.md](/reference/js-exports/) has the details. [examples/](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.3/examples) has runnable examples (the cart, standard library use, goroutines) with the JavaScript that calls them.
 
 ### Calling JavaScript from Go
 
@@ -83,8 +83,8 @@ log.Fatal(http.ListenAndServe(":8080", api.Handler()))
 
 ```ts
 // Cloudflare Workers (and Deno.serve, Bun.serve, service workers): a fetch handler.
-import { Handler, $runtime as rt } from "./goesm-ts/example.com/app/api.ts";
-export default { fetch: rt.fetchHandler(Handler()) };
+import { Handler } from "./goesm-ts/example.com/app/api.ts";
+export default { fetch: Handler() }; // an http.Handler result is a fetch handler
 ```
 
 Each request runs in its own goroutine, its body read in full first; the response is sent when the handler returns, or streams from its first flush (Server-Sent Events, Connect's server streaming). Under Workers, `os.Getenv` reads the Worker's text bindings and secrets with the `nodejs_compat` flag. The HTTP client is `fetch`. [docs/use-cases.md](/reference/use-cases/) lists what is supported where.

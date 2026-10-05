@@ -11,5 +11,4 @@ PoC は Go 言語の大部分と、標準ライブラリのかなりの部分を
 まだできないことは次のとおりです。詳細は [ARCHITECTURE.ja.md §11](/ja/reference/architecture/) にあります。
 
 - `int` と `uint` は JS の number です。2^53 未満では正確ですが、64 ビットのオーバーフローで折り返しません。`int64` と `uint64` は BigInt で表すので正確です。
-- JavaScript から Go を呼ぶときの ABI はまだありません。Go の文字列とスライスはランタイムのオブジェクトなので、呼び出し側が変換する必要があります。変換には、各モジュールが再 export しているランタイムの `rt.fromJSString`、`rt.sliceLit`、`rt.toArray` などを使います。ブロックしうる関数は Promise を返します。
-- goroutine ごとの `recover` の状態、ホストに保留中の処理があるときのデッドロック検出、DOM バインディングは、まだ実装していません。
+- goroutine ごとの `recover` の状態と、ホストに保留中の処理があるときのデッドロック検出は、まだ実装していません。

@@ -30,9 +30,9 @@ func Discount(total, percent int) int {
 ```
 
 ```ts
-import { Discount, Item, Total, $runtime as rt } from "./goesm-ts/example.com/app/cart.ts";
+import { Discount, Total } from "./goesm-ts/example.com/app/cart.ts";
 
-const items = rt.sliceLit([new Item(rt.fromJSString("apple"), 120, 3), new Item(rt.fromJSString("bread"), 250, 1)]);
+const items = [{ Name: "りんご", Price: 120, Quantity: 3 }, { Name: "bread", Price: 250, Quantity: 1 }];
 Total(items);          // 610
 Discount(2408, 15);    // 2046: Go の整数除算。2046.8 ではない
 ```

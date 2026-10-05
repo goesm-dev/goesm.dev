@@ -11,5 +11,4 @@ The proof of concept compiles most of the Go language and a good part of the sta
 Not there yet (details in [ARCHITECTURE.md §11](/reference/architecture/#11-implemented--not-implemented--differences-from-native-go)):
 
 - `int` and `uint` are JS numbers: exact below 2^53, but they do not wrap on 64-bit overflow. `int64` and `uint64` are exact (BigInt).
-- There is no JS calling ABI for JavaScript calling Go yet: Go strings and slices are runtime objects, converted by hand with the runtime each module re-exports (`rt.fromJSString`, `rt.sliceLit`, `rt.toArray`, ...). Functions that may block return Promises.
-- Goroutine-local `recover` state, deadlock detection while the host has pending work, DOM bindings.
+- Goroutine-local `recover` state, and deadlock detection while the host has pending work.

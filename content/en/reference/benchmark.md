@@ -16,13 +16,13 @@ This directory compares the JavaScript goesm generates with the other ways of ru
 | **Go wasm** | WebAssembly + `wasm_exec.js` | `GOOS=js GOARCH=wasm go build -ldflags=-s ./jsmain` (Go 1.27.1) |
 | **TinyGo wasm** | WebAssembly + `wasm_exec.js` | `tinygo build -target=wasm -opt=2 -no-debug ./jsmain` (TinyGo 0.42.0) |
 
-Two references frame the numbers: **native Go** (the same kernels compiled by `go build` for the machine) and **hand-written JS** (the same workloads written by hand in idiomatic JavaScript, [js/handwritten.mjs](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.2/bench/js/handwritten.mjs)), which shows what the JS engine itself makes of each workload.
+Two references frame the numbers: **native Go** (the same kernels compiled by `go build` for the machine) and **hand-written JS** (the same workloads written by hand in idiomatic JavaScript, [js/handwritten.mjs](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.3/bench/js/handwritten.mjs)), which shows what the JS engine itself makes of each workload.
 
-The latest results are in [results/results.md](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.2/bench/results/results.md) (raw data: [results/results.json](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.2/bench/results/results.json)); the main [README](/guide/performance/) summarizes them.
+The latest results are in [results/results.md](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.3/bench/results/results.md) (raw data: [results/results.json](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.3/bench/results/results.json)); the main [README](/guide/performance/) summarizes them.
 
 ## What is measured
 
-Every implementation runs the same Go source, package [kernels](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.2/bench/kernels):
+Every implementation runs the same Go source, package [kernels](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.3/bench/kernels):
 
 | Kernel | Size | Exercises |
 | --- | ---: | --- |
@@ -47,11 +47,11 @@ Every implementation runs the same Go source, package [kernels](https://github.c
 
 Each kernel takes a size and returns a checksum. The harness checks every implementation's checksum against native Go's, so a number in the results is the time of a correct computation.
 
-The last three are the shape of a library API: many small calls from JavaScript, each converting its arguments and results at the boundary. They are timed as a JS loop over [`callInputs`](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.2/bench/js/suite.mjs) (100 different inputs) and reported per call, so they show what one call costs from JS, work and crossing together. Native Go runs the same loop in Go (`CallChecksum` in [kernels/api.go](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.2/bench/kernels/api.go)), the cost of the work alone; it has no Add.
+The last three are the shape of a library API: many small calls from JavaScript, each converting its arguments and results at the boundary. They are timed as a JS loop over [`callInputs`](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.3/bench/js/suite.mjs) (100 different inputs) and reported per call, so they show what one call costs from JS, work and crossing together. Native Go runs the same loop in Go (`CallChecksum` in [kernels/api.go](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.3/bench/kernels/api.go)), the cost of the work alone; it has no Add.
 
 ### Cliffs
 
-The kernels of [kernels/cliffs.go](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.2/bench/kernels/cliffs.go) and [kernels/pull.go](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.2/bench/kernels/pull.go) measure ways of writing Go that a compiler to JS can make far slower than native Go or than the JS one would write for the same work. The geometric means and totals leave them out; the report shows them in a table of their own, and the worst kernel of each implementation covers them.
+The kernels of [kernels/cliffs.go](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.3/bench/kernels/cliffs.go) and [kernels/pull.go](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.3/bench/kernels/pull.go) measure ways of writing Go that a compiler to JS can make far slower than native Go or than the JS one would write for the same work. The geometric means and totals leave them out; the report shows them in a table of their own, and the worst kernel of each implementation covers them.
 
 | Kernel | Size | Exercises |
 | --- | ---: | --- |
@@ -63,10 +63,10 @@ The kernels of [kernels/cliffs.go](https://github.com/goesm-dev/goesm/blob/v0.0.
 
 The **total** is the sum of the medians of every kernel (the calling kernels' whole loops): the time an implementation takes to run each kernel once, which weighs the slow kernels the way an application would feel them, where the geometric mean weighs every kernel the same.
 
-- **Timing.** For each kernel the harness ([js/harness.mjs](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.2/bench/js/harness.mjs); [native/main.go](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.2/bench/native/main.go) for native Go) warms up for at least 3 calls and 300 ms, then times single calls until it has at least 10 and 1 s of them (or at least 3 and 10 s for slow calls), and reports the median.
+- **Timing.** For each kernel the harness ([js/harness.mjs](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.3/bench/js/harness.mjs); [native/main.go](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.3/bench/native/main.go) for native Go) warms up for at least 3 calls and 300 ms, then times single calls until it has at least 10 and 1 s of them (or at least 3 and 10 s for slow calls), and reports the median.
 - **Isolation.** Each implementation runs in its own process (Node.js, Bun) or page (Chromium), one after another. The processes get the environment without `NODE_OPTIONS` and `BUN_OPTIONS`, whose runtime options (such as Bun's `--smol`, a smaller heap that collects more often) would change what is measured.
-- **Calling.** goesm's output is an ES module whose exports are the Go functions, so the harness imports `kernels` and calls `Fib(30)` directly. GopherJS, Go wasm and TinyGo build programs rather than packages: [jsmain](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.2/bench/jsmain) exposes the kernels with `syscall/js` (`js.FuncOf`) on `globalThis.goBench`, which is how those programs are usually called from JS. A `syscall/js` callback must not block, so for them Channels returns a Promise and runs on its own goroutine; under goesm, Channels is itself an async function.
-- **Calling kernels.** Each implementation is called the fastest way it offers. goesm's exports are called directly, with the runtime's `fromJSString` / `toJSString` converting strings (Go strings are byte strings). For Go and TinyGo wasm, a `syscall/js` call costs microseconds (Go) to about a millisecond (TinyGo), so [jsmain/export_wasm.go](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.2/bench/jsmain/export_wasm.go) exports Add, Upper and Handle as plain WebAssembly functions (`//go:wasmexport` for Go, `//export` for TinyGo, whose `//go:wasmexport` costs about 0.2 ms per call while `main` blocks) and passes strings as UTF-8 through linear memory with `TextEncoder.encodeInto` and `TextDecoder`. GopherJS goes through `syscall/js`, which for it is a plain JS call.
+- **Calling.** goesm's output is an ES module whose exports are the Go functions, so the harness imports `kernels` and calls `Fib(30)` directly. GopherJS, Go wasm and TinyGo build programs rather than packages: [jsmain](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.3/bench/jsmain) exposes the kernels with `syscall/js` (`js.FuncOf`) on `globalThis.goBench`, which is how those programs are usually called from JS. A `syscall/js` callback must not block, so for them Channels returns a Promise and runs on its own goroutine; under goesm, Channels is itself an async function.
+- **Calling kernels.** Each implementation is called the fastest way it offers. goesm's exports are called directly with JS strings, which the export wrappers convert to and from Go's byte strings. For Go and TinyGo wasm, a `syscall/js` call costs microseconds (Go) to about a millisecond (TinyGo), so [jsmain/export_wasm.go](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.3/bench/jsmain/export_wasm.go) exports Add, Upper and Handle as plain WebAssembly functions (`//go:wasmexport` for Go, `//export` for TinyGo, whose `//go:wasmexport` costs about 0.2 ms per call while `main` blocks) and passes strings as UTF-8 through linear memory with `TextEncoder.encodeInto` and `TextDecoder`. GopherJS goes through `syscall/js`, which for it is a plain JS call.
 - **Startup** is the time from starting to load the output (reading or fetching it, compiling, running package initialization and `main`) to the first callable function. goesm's output directory gets a `package.json` with `"type": "module"`, as an ES module package would ship; without it Node.js parses the module a second time to detect its format (about 30 ms here).
 - **Size** is that of the files a page has to load: the bundled module for goesm, the script for GopherJS, the `.wasm` plus `wasm_exec.js` for Go and TinyGo. It includes the parts of the standard library the kernels use (`fmt`, `encoding/json`, `sort`, `strconv`, `strings`, `sync`, `math`).
 
@@ -76,12 +76,12 @@ The **total** is the sum of the medians of every kernel (the calling kernels' wh
 - TinyGo is built with `-opt=2` (optimize for speed; its default `-opt=z` optimizes for size). Go wasm is built with its defaults, which have no speed/size switch.
 - Native Go runs goroutines on several threads; the others are single-threaded. Handing values over unbuffered channels between threads costs more than switching goroutines on one thread, which is why native Go is not the fastest at Channels.
 - Hand-written JS is not Go: it uses typed arrays, `Map`, `JSON.stringify` / `JSON.parse` (implemented natively by the engine) and template strings, and does no bounds or nil checks of its own. It has no Channels.
-- [kernels](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.2/bench/kernels) stays within the Go 1.21 language and standard library so that GopherJS 1.21 compiles it ([gopherjs.mod](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.2/bench/gopherjs.mod) is the module file it builds with). Pull needs Go 1.23's `iter` and is built for the others only.
+- [kernels](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.3/bench/kernels) stays within the Go 1.21 language and standard library so that GopherJS 1.21 compiles it ([gopherjs.mod](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.3/bench/gopherjs.mod) is the module file it builds with). Pull needs Go 1.23's `iter` and is built for the others only.
 - jsmain runs Parallel and Pull on their own goroutine and returns a Promise, as it does Channels: they block.
 
 ## Running
 
-The tools are pinned: Go, Node.js and Bun in the repository's [mise.toml](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.2/mise.toml), TinyGo in [this directory's](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.2/bench/mise.toml); `build.sh` installs GopherJS with `go install` at a fixed version, and Chromium is driven by `playwright-core` pinned in [package.json](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.2/bench/package.json).
+The tools are pinned: Go, Node.js and Bun in the repository's [mise.toml](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.3/mise.toml), TinyGo in [this directory's](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.3/bench/mise.toml); `build.sh` installs GopherJS with `go install` at a fixed version, and Chromium is driven by `playwright-core` pinned in [package.json](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.3/bench/package.json).
 
 ```sh
 cd bench
@@ -96,4 +96,4 @@ node js/report.mjs results/results.json -readme   # copy the summary and charts 
 
 ## int64.mjs
 
-[int64.mjs](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.2/bench/int64.mjs) is a separate micro-benchmark of the representations goesm considered for `int64` / `uint64` (BigInt, two uint32 halves, objects, a hybrid); see [ARCHITECTURE.md](/reference/architecture/#64-bit-integers).
+[int64.mjs](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.3/bench/int64.mjs) is a separate micro-benchmark of the representations goesm considered for `int64` / `uint64` (BigInt, two uint32 halves, objects, a hybrid); see [ARCHITECTURE.md](/reference/architecture/#64-bit-integers).

@@ -3,14 +3,16 @@ import { defineConfig } from "astro/config";
 import gosfc from "@gosfc/astro";
 
 // Cloudflare's asset server answers a missing page with the nearest 404.html
-// above it (cloudflare.config.ts), so the Japanese one must be ja/404.html.
-// Astro writes every page but the root 404 as a directory.
+// above it (cloudflare.config.ts), so each 404 page Astro writes as
+// <dir>/404/index.html (all but the root one) moves to <dir>/404.html.
 const localized404 = {
   name: "localized-404",
   hooks: {
     "astro:build:done": async ({ dir }) => {
-      await rename(new URL("ja/404/index.html", dir), new URL("ja/404.html", dir));
-      await rmdir(new URL("ja/404/", dir));
+      for (const d of ["ja/", "gosfc/", "gosfc/ja/"]) {
+        await rename(new URL(d + "404/index.html", dir), new URL(d + "404.html", dir));
+        await rmdir(new URL(d + "404/", dir));
+      }
     },
   },
 };

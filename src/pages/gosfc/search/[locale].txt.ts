@@ -1,5 +1,4 @@
-// The search index of a locale, written by the Go engine at build time and
-// fetched by the search dialog.
+// The search index of a locale of the gosfc site (see ../../search/).
 import type { APIRoute } from "astro";
 import { SearchIndex, $runtime as rt } from "go:goesm.dev/site";
 
@@ -8,6 +7,6 @@ export function getStaticPaths() {
 }
 
 export const GET: APIRoute = ({ params }) =>
-  new Response(rt.toJSString(SearchIndex(rt.fromJSString(""), rt.fromJSString(params.locale!))), {
+  new Response(rt.toJSString(SearchIndex(rt.fromJSString("/gosfc"), rt.fromJSString(params.locale!))), {
     headers: { "content-type": "text/plain; charset=utf-8" },
   });

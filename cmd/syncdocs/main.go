@@ -9,11 +9,13 @@
 // files are read with `git show <rev>:<path>`, so the checked-out branch does
 // not matter, only that the pinned revision has been fetched.
 //
-// It writes:
+// goesm's documents go to the goesm site (content/, routes at /), gosfc's
+// to the gosfc site (content/gosfc/, routes at /gosfc/). It writes, in the
+// site's content directory:
 //
-//   - content/{en,ja}/reference/*.md: whole documents (ARCHITECTURE.md,
+//   - {en,ja}/reference/*.md: whole documents (ARCHITECTURE.md,
 //     docs/*.md, ...), with `source:` frontmatter for the "edit" link
-//   - content/{en,ja}/_<repo>/*.md: README sections, included by guide pages
+//   - {en,ja}/_<repo>/*.md: README sections, included by guide pages
 //   - public/repo/<repo>/...: the images those files show
 //   - site/sources_gen.go: the revisions synced
 //
@@ -43,10 +45,13 @@ type repo struct {
 	module string // Go module path
 	web    string
 	dir    string // git checkout
-	rev    string // git revision (tag or commit)
-	ver    string // module version from go.mod
+	// content is the content directory of the site documenting the
+	// repository ("content/"), and base the route the site is under ("").
+	content, base string
+	rev           string // git revision (tag or commit)
+	ver           string // module version from go.mod
 	// docs maps repository paths of the English documents to site routes
-	// (without locale prefix). The Japanese document is the same path with
+	// (without base and locale prefix). The Japanese document is the same path with
 	// .ja.md.
 	docs map[string]string
 	// sections maps README section slugs (English heading) to the route of
@@ -68,6 +73,7 @@ func main() {
 	repos := []*repo{
 		{
 			name: "goesm", module: "github.com/goesm-dev/goesm", web: "https://github.com/goesm-dev/goesm", dir: *goesmDir,
+			content: "content/", base: "",
 			docs: map[string]string{
 				"README.md":                   "/guide/",
 				"ARCHITECTURE.md":             "/reference/architecture/",
@@ -91,13 +97,18 @@ func main() {
 		},
 		{
 			name: "gosfc", module: "github.com/goesm-dev/gosfc", web: "https://github.com/goesm-dev/gosfc", dir: *gosfcDir,
-			docs: map[string]string{"README.md": "/guide/vue/"},
+			content: "content/gosfc/", base: "/gosfc",
+			docs: map[string]string{
+				"README.md":       "/guide/",
+				"ARCHITECTURE.md": "/reference/architecture/",
+				"CONTRIBUTING.md": "/reference/contributing/",
+			},
 			sections: map[string]string{
-				"intro":                        "/guide/vue/",
-				"usage-astro":                  "/guide/vue/",
-				"writing-the-go-block":         "/guide/vue/",
-				"importing-go-from-javascript": "/guide/vue/",
-				"benchmark":                    "/guide/vue/",
+				"intro":                        "/guide/",
+				"usage-astro":                  "/guide/getting-started/",
+				"writing-the-go-block":         "/guide/go-block/",
+				"importing-go-from-javascript": "/guide/importing-go/",
+				"benchmark":                    "/guide/benchmark/",
 			},
 		},
 	}
@@ -125,8 +136,10 @@ func main() {
 
 	// Files this tool owns that are no longer produced are removed.
 	owned := []string{"public/repo"}
-	for _, l := range locales {
-		owned = append(owned, "content/"+l.code+"/_goesm", "content/"+l.code+"/_gosfc")
+	for _, r := range repos {
+		for _, l := range locales {
+			owned = append(owned, r.content+l.code+"/_"+r.name)
+		}
 	}
 	var stale []string
 	for _, dir := range owned {
@@ -139,6 +152,8 @@ func main() {
 	}
 	for _, l := range locales {
 		files, _ := filepath.Glob("content/" + l.code + "/reference/*.md")
+		more, _ := filepath.Glob("content/*/" + l.code + "/reference/*.md")
+		files = append(files, more...)
 		for _, f := range files {
 			data, _ := os.ReadFile(f)
 			if bytes.Contains(data, []byte(generatedMarker)) && out[filepath.ToSlash(f)] == nil {
@@ -249,7 +264,7 @@ func (r *repo) sync(out map[string][]byte) error {
 			}
 			name := strings.Trim(strings.TrimPrefix(route, "/reference/"), "/")
 			doc := "---\nsource: " + r.name + ":" + file + "\n---\n\n" + generatedMarker + "\n\n" + body
-			out["content/"+l.code+"/reference/"+name+".md"] = []byte(doc)
+			out[r.content+l.code+"/reference/"+name+".md"] = []byte(doc)
 		}
 	}
 	return nil
@@ -282,7 +297,7 @@ func (r *repo) syncReadme(out map[string][]byte, code, prefix, file, text string
 		if err != nil {
 			return err
 		}
-		out["content/"+code+"/_"+r.name+"/readme-"+names[i]+".md"] = []byte(generatedMarker + "\n\n" + strings.TrimSpace(body) + "\n")
+		out[r.content+code+"/_"+r.name+"/readme-"+names[i]+".md"] = []byte(generatedMarker + "\n\n" + strings.TrimSpace(body) + "\n")
 	}
 	return nil
 }
@@ -434,7 +449,7 @@ func (r *repo) link(out map[string][]byte, prefix, file, dest string, image bool
 		if en == "README.md" && frag != "" {
 			return r.readmeAnchor(prefix, rel, frag)
 		}
-		return prefix + route + frag, nil
+		return r.base + prefix + route + frag, nil
 	}
 	kind := "blob"
 	if path.Ext(rel) == "" {
@@ -464,7 +479,7 @@ func (r *repo) readmeAnchor(prefix, file, frag string) (string, error) {
 		}
 	}
 	if route, ok := r.sections[slug]; ok {
-		return prefix + route, nil
+		return r.base + prefix + route, nil
 	}
-	return prefix + r.docs["README.md"] + frag, nil
+	return r.base + prefix + r.docs["README.md"] + frag, nil
 }

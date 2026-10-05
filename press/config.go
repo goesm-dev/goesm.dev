@@ -7,6 +7,12 @@ type Config struct {
 	// SiteURL is the canonical origin, without a trailing slash
 	// ("https://goesm.dev"); it is used for the sitemap and canonical links.
 	SiteURL string
+	// Base is the route every page of the site is under, without a trailing
+	// slash: "" for a site at the root of SiteURL, "/gosfc" for one below
+	// it. Links in the configuration (nav, sidebar, hero and feature links)
+	// are relative to Base and the locale prefix; links in Markdown that
+	// start with "/" are paths from the origin.
+	Base string
 	// EditBase is prepended to a page's content path for its "Edit this
 	// page" link ("https://github.com/org/site/edit/main/content/").
 	EditBase string
@@ -59,6 +65,9 @@ type NavItem struct {
 	Link string // route without the locale prefix, or an absolute URL
 	// Match is the route prefix that makes the item active (defaults to Link).
 	Match string
+	// Root marks Link as a path from the origin, for a link to another site
+	// on the same domain: neither Base nor the locale prefix is added.
+	Root bool
 }
 
 type SidebarGroup struct {

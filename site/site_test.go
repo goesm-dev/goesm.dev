@@ -24,7 +24,7 @@ func TestLinks(t *testing.T) {
 	pages := map[string]string{}
 	for _, r := range routes {
 		var html string
-		if p := s.Page(r.Route); p.Layout == "home" {
+		if p := siteOf(r.Route).Page(r.Route); p.Layout == "home" {
 			html = Home(r.Route).HTML
 		} else {
 			d := Doc(r.Route)
@@ -67,5 +67,39 @@ func TestHead(t *testing.T) {
 	json.Unmarshal([]byte(HeadJSON("/nope/")), &h)
 	if h.Found {
 		t.Error("found /nope/")
+	}
+	h = Head{}
+	json.Unmarshal([]byte(HeadJSON("/gosfc/ja/guide/")), &h)
+	if !h.Found || h.Site != "gosfc" || h.Title != "gosfc とは | gosfc" || h.Search != "/gosfc/search/ja.txt" || h.Home != "/gosfc/ja/" ||
+		len(h.Alternates) != 2 || h.Alternates[0].Href != "https://goesm.dev/gosfc/guide/" {
+		t.Errorf("%+v", h)
+	}
+	h = Head{}
+	json.Unmarshal([]byte(HeadJSON("/gosfc/ja/nope/")), &h)
+	if h.Found || h.Lang != "ja" || h.Home != "/gosfc/ja/" {
+		t.Errorf("gosfc 404: %+v", h)
+	}
+}
+
+// The two sites link to each other, and the sitemap lists both.
+func TestSites(t *testing.T) {
+	var gosfcLink bool
+	for _, l := range NavBar("/ja/guide/").Nav {
+		gosfcLink = gosfcLink || l.Link == "/gosfc/ja/"
+	}
+	if !gosfcLink {
+		t.Error("no link to /gosfc/ja/ in the goesm nav")
+	}
+	if bar := NavBar("/gosfc/guide/"); bar.Title != "gosfc" || bar.Home != "/gosfc/" || bar.Social[0].Link != "https://github.com/goesm-dev/gosfc" {
+		t.Errorf("gosfc bar %+v", bar)
+	}
+	sm := Sitemap()
+	for _, u := range []string{"https://goesm.dev/guide/", "https://goesm.dev/gosfc/guide/go-block/", "https://goesm.dev/gosfc/ja/reference/architecture/"} {
+		if !strings.Contains(sm, "<loc>"+u+"</loc>") {
+			t.Errorf("sitemap has no %s", u)
+		}
+	}
+	if SearchIndex("/gosfc", "en") == SearchIndex("", "en") {
+		t.Error("one search index for both sites")
 	}
 }

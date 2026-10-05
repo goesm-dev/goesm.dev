@@ -1,6 +1,7 @@
-// Package site is goesm.dev: the press engine loaded with the site's
-// configuration and content. Its functions are what the Astro pages and the
-// Vue theme call; each takes the route of the page being rendered.
+// Package site is goesm.dev: the press engine loaded with the configuration
+// and content of its two sites, goesm at / and gosfc at /gosfc/. Its
+// functions are what the Astro pages and the Vue theme call; each takes the
+// route of the page being rendered, which also says which site it is on.
 //
 // Functions returning structs are called from Vue templates (gosfc converts
 // the result into plain objects, with the json tags as keys). Functions
@@ -9,20 +10,45 @@ package site
 
 import (
 	"encoding/json"
+	"io/fs"
 	"strings"
 
 	"goesm.dev/content"
 	"goesm.dev/press"
 )
 
-var s = load()
+var (
+	goesmSite = load(content.FS, config)
+	gosfcSite = load(subFS(content.FS, "gosfc"), gosfcConfig)
+	// Sites with a longer Base first, so that siteOf finds the most
+	// specific one.
+	sites = []*press.Site{gosfcSite, goesmSite}
+)
 
-func load() *press.Site {
-	site, err := press.Load(content.FS, config)
+func load(fsys fs.FS, cfg *press.Config) *press.Site {
+	site, err := press.Load(fsys, cfg)
 	if err != nil {
 		panic(err)
 	}
 	return site
+}
+
+func subFS(fsys fs.FS, dir string) fs.FS {
+	sub, err := fs.Sub(fsys, dir)
+	if err != nil {
+		panic(err)
+	}
+	return sub
+}
+
+// siteOf returns the site a route belongs to.
+func siteOf(r string) *press.Site {
+	for _, s := range sites {
+		if s.Owns(r) {
+			return s
+		}
+	}
+	return goesmSite
 }
 
 type route struct {
@@ -34,14 +60,17 @@ type route struct {
 // without its slashes, for Astro's getStaticPaths.
 func RoutesJSON() string {
 	var out []route
-	for _, p := range s.Pages() {
-		out = append(out, route{Slug: strings.Trim(p.Route, "/"), Route: p.Route})
+	for _, s := range sites {
+		for _, p := range s.Pages() {
+			out = append(out, route{Slug: strings.Trim(p.Route, "/"), Route: p.Route})
+		}
 	}
 	return mustJSON(out)
 }
 
 // Head is what <head> needs.
 type Head struct {
+	Site        string         `json:"site"` // "goesm" or "gosfc"
 	Found       bool           `json:"found"`
 	Title       string         `json:"title"`
 	Description string         `json:"description"`
@@ -64,14 +93,16 @@ type altLink struct {
 // HeadJSON returns the Head of route as JSON. For a route without a page
 // (the 404 page), found is false and the rest describes the route's locale.
 func HeadJSON(r string) string {
+	s := siteOf(r)
 	loc := s.LocaleOf(r)
 	h := Head{
+		Site:   loc.Title,
 		Lang:   loc.Lang,
 		Locale: loc.Code,
 		UI:     loc.UI,
-		Search: "/search/" + loc.Code + ".txt",
-		Home:   loc.Prefix + "/",
-		Social: config.Social,
+		Search: s.Config.Base + "/search/" + loc.Code + ".txt",
+		Home:   s.Home(loc),
+		Social: s.Config.Social,
 		Title:  loc.UI.NotFound + " | " + loc.Title,
 		Layout: "page",
 	}
@@ -93,20 +124,28 @@ func HeadJSON(r string) string {
 	} else {
 		h.Title = p.Title + " | " + loc.Title
 	}
-	h.Canonical = config.SiteURL + p.Route
+	h.Canonical = s.Config.SiteURL + p.Route
 	for _, a := range s.Alternates(p.Route) {
 		if a.Exists {
-			h.Alternates = append(h.Alternates, altLink{Lang: a.Lang, Href: config.SiteURL + a.Link})
+			h.Alternates = append(h.Alternates, altLink{Lang: a.Lang, Href: s.Config.SiteURL + a.Link})
 		}
 	}
 	return mustJSON(h)
 }
 
-// SearchIndex returns the search index of a locale ("en", "ja").
-func SearchIndex(locale string) string { return s.SearchIndex(locale) }
+// SearchIndex returns the search index of a locale ("en", "ja") of the site
+// at base ("" or "/gosfc").
+func SearchIndex(base, locale string) string {
+	for _, s := range sites {
+		if s.Config.Base == base {
+			return s.SearchIndex(locale)
+		}
+	}
+	panic("no site at " + base)
+}
 
-// Sitemap returns sitemap.xml.
-func Sitemap() string { return s.Sitemap() }
+// Sitemap returns sitemap.xml, for both sites.
+func Sitemap() string { return press.Sitemap(goesmSite, gosfcSite) }
 
 // Bar is the navigation bar.
 type Bar struct {
@@ -119,18 +158,19 @@ type Bar struct {
 }
 
 func NavBar(r string) Bar {
+	s := siteOf(r)
 	loc := s.LocaleOf(r)
 	return Bar{
 		Title:   loc.Title,
-		Home:    loc.Prefix + "/",
+		Home:    s.Home(loc),
 		Nav:     s.Nav(r),
 		Locales: s.Alternates(r),
-		Social:  config.Social,
+		Social:  s.Config.Social,
 		UI:      loc.UI,
 	}
 }
 
-func Sidebar(r string) []press.SidebarView { return s.Sidebar(r) }
+func Sidebar(r string) []press.SidebarView { return siteOf(r).Sidebar(r) }
 
 // DocView is a documentation page.
 type DocView struct {
@@ -147,6 +187,7 @@ type DocView struct {
 }
 
 func Doc(r string) DocView {
+	s := siteOf(r)
 	p := s.Page(r)
 	if p == nil {
 		return DocView{}
@@ -155,7 +196,7 @@ func Doc(r string) DocView {
 	edit, synced := s.EditLink(p)
 	v := DocView{Title: p.Title, HTML: html, Outline: outline, Edit: edit, UI: p.Locale.UI}
 	if synced {
-		v.Synced = strings.TrimPrefix(config.Sources[p.Source].Repo, "https://github.com/") + ": " + p.SourcePath
+		v.Synced = strings.TrimPrefix(s.Config.Sources[p.Source].Repo, "https://github.com/") + ": " + p.SourcePath
 	}
 	v.Prev, v.Next = s.PrevNext(p.Route)
 	return v
@@ -169,6 +210,7 @@ type HomeView struct {
 }
 
 func Home(r string) HomeView {
+	s := siteOf(r)
 	p := s.Page(r)
 	if p == nil {
 		return HomeView{}

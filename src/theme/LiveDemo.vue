@@ -39,6 +39,7 @@ import "goesm.dev/client/demo"
 
 type Props struct {
 	Lang string
+	Site string // "goesm" or "gosfc": which site's home page shows it
 }
 
 type text struct {
@@ -60,6 +61,14 @@ if props.Lang == "ja" {
 		Lead:     "このカートは goesm でコンパイルした Go のパッケージです。ボタンは Go の関数を呼び、合計は Go の int で計算しています。",
 		Note:     "整数の割り算は Go のまま:",
 		Discount: "割引",
+	}
+}
+if props.Site == "gosfc" {
+	t.Title = "This component is Go"
+	t.Lead = "A Vue component whose <script setup lang=\"go\"> holds the cart: the buttons call its Go functions, and the template shows its Go ints."
+	if props.Lang == "ja" {
+		t.Title = "このコンポーネントは Go です"
+		t.Lead = "カートを持っているのは、この Vue コンポーネントの <script setup lang=\"go\"> です。ボタンはその Go の関数を呼び、テンプレートは Go の int を表示します。"
 	}
 }
 

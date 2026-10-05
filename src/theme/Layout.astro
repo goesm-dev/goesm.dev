@@ -72,7 +72,7 @@ const isDoc = head.found && head.layout === "doc";
     {
       head.found && head.layout === "home" && (
         <HomePage route={route}>
-          <LiveDemo slot="demo" client:visible lang={head.locale} />
+          <LiveDemo slot="demo" client:visible lang={head.locale} site={head.site} />
         </HomePage>
       )
     }

@@ -59,3 +59,7 @@ pnpm build:cf     # dist/, then the Build Output in .cloudflare/output
 pnpm preview:cf   # serve it locally as Workers would
 pnpm run deploy   # build and upload (needs `cf auth login`)
 ```
+
+CI deploys every merge to main with `mise run build` and `mise run deploy`,
+then tags the commit `vYYYY.M.N` (N counts from 0 each month, in UTC). It
+authenticates with the `CF_ID` and `CF_TOKEN` repository secrets.

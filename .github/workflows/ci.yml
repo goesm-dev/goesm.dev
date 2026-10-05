@@ -50,3 +50,47 @@ jobs:
       # The Cloudflare Workers Build Output, checked but not uploaded.
       - run: pnpm exec wrangler build --experimental-new-config --experimental-cf-build-output
       - run: pnpm exec cf deploy --prebuilt --dry-run
+
+  # Every merge to main, once the checks above pass, is deployed to Cloudflare
+  # Workers and tagged vYYYY.M.N: N counts the deploys within the month (UTC),
+  # from 0. The tag is pushed after the deploy succeeds.
+  deploy:
+    needs: site
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: deploy
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+      - uses: jdx/mise-action@v5
+        with:
+          version: 2026.10.0
+      - uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+            ~/.local/share/pnpm/store
+          key: site-${{ runner.os }}-${{ hashFiles('mise.toml', 'go.sum', 'pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: site-${{ runner.os }}-${{ hashFiles('mise.toml', 'go.sum', 'pnpm-lock.yaml') }}-
+      - id: version
+        run: |
+          prefix="v$(date -u +%Y.%-m)."
+          last=$(git ls-remote --tags origin "refs/tags/$prefix*" | sed 's|.*/||' | awk -F. -v p="$prefix" 'index($0, p) == 1 && $NF ~ /^[0-9]+$/ { print $NF }' | sort -n | tail -n 1)
+          echo "tag=$prefix$(( ${last:--1} + 1 ))" >> "$GITHUB_OUTPUT"
+      - run: mise run build
+      - run: mise run deploy --tag "$TAG" --message "$TAG ($GITHUB_SHA)"
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_TOKEN }}
+      - run: |
+          git tag "$TAG" "$GITHUB_SHA"
+          git push origin "refs/tags/$TAG"
+        env:
+          TAG: ${{ steps.version.outputs.tag }}

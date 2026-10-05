@@ -7,6 +7,9 @@ export default defineConfig({
   worker: {
     name: "goesm-dev",
     compatibilityDate: "2026-10-04",
+    // Custom domain: Cloudflare creates its DNS record and certificate on
+    // deploy (the goesm.dev zone must be on the account).
+    domains: ["goesm.dev"],
     assets: {
       // Astro writes /guide/ as guide/index.html (trailingSlash: "always");
       // /guide and /guide/index.html redirect to /guide/.

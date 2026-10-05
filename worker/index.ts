@@ -31,10 +31,10 @@ export async function handle(request: Request, assets: Assets): Promise<Response
   if ((request.method !== "GET" && request.method !== "HEAD") || isFile(url.pathname)) {
     return assets.fetch(request);
   }
-  if (!wantsMarkdown(request.headers.get("accept"))) {
+  if (!wantsMarkdown(request.headers.get("accept"), request.headers.get("sec-fetch-site"))) {
     const res = await assets.fetch(request);
     return withHeaders(res, (h) => {
-      h.append("vary", "Accept");
+      h.append("vary", "Accept, Sec-Fetch-Site");
       if (res.ok && h.get("content-type")?.startsWith("text/html")) {
         h.set("link", `<${markdownPath(url.pathname)}>; rel="alternate"; type="text/markdown"`);
       }
@@ -46,21 +46,25 @@ export async function handle(request: Request, assets: Assets): Promise<Response
     return withHeaders(res, (h) => {
       h.set("content-type", "text/markdown; charset=utf-8");
       h.set("content-location", md);
-      h.append("vary", "Accept");
+      h.append("vary", "Accept, Sec-Fetch-Site");
     });
   }
   const home = homes.find((p) => url.pathname.startsWith(p)) ?? "/";
   const body = `# Not found\n\nThere is no page at ${url.pathname}. The pages are listed in ${url.origin}${home}llms.txt.\n`;
   return new Response(request.method === "HEAD" ? null : body, {
     status: 404,
-    headers: { "content-type": "text/markdown; charset=utf-8", vary: "Accept" },
+    headers: { "content-type": "text/markdown; charset=utf-8", vary: "Accept, Sec-Fetch-Site" },
   });
 }
 
 // wantsMarkdown reports whether a request with this Accept header should get
 // Markdown: when it names text/markdown, or does not name HTML at all
-// (curl's */*, a missing header). Browsers always name text/html.
-export function wantsMarkdown(accept: string | null): boolean {
+// (curl's */*, a missing header). Browsers name text/html when they load a
+// page. The site's own pages fetch pages with */* too (Astro's client router
+// and its prefetching). The browser marks those requests with
+// Sec-Fetch-Site: same-origin, which curl and other clients do not send, so
+// they get HTML unless they name text/markdown.
+export function wantsMarkdown(accept: string | null, fetchSite: string | null = null): boolean {
   const types = new Map<string, number>();
   for (const part of (accept ?? "").toLowerCase().split(",")) {
     const [type, ...params] = part.split(";").map((s) => s.trim());
@@ -70,7 +74,8 @@ export function wantsMarkdown(accept: string | null): boolean {
   }
   const html = Math.max(types.get("text/html") ?? 0, types.get("application/xhtml+xml") ?? 0);
   const md = types.get("text/markdown");
-  return md === undefined ? html === 0 : md > 0 && md >= html;
+  if (md === undefined) return html === 0 && fetchSite !== "same-origin";
+  return md > 0 && md >= html;
 }
 
 // markdownPath is the Markdown version of a page path (press.MarkdownPath):

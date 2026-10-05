@@ -1,6 +1,9 @@
 ---
 // The page shell. Astro owns routing and <head>; everything inside <body> is
 // the Vue theme, whose components run Go (the site package) through gosfc.
+// Links between pages go through Astro's client router: the next page is
+// fetched and swapped in, and its islands start again.
+import { ClientRouter } from "astro:transitions";
 import { HeadJSON } from "go:goesm.dev/site";
 import NavBar from "./NavBar.vue";
 import Sidebar from "./Sidebar.vue";
@@ -45,11 +48,21 @@ const footer = (ui.footer as string).split(/\b(goesm|gosfc)\b/);
     <link rel="manifest" href={head.site === "gosfc" ? "/gosfc/site.webmanifest" : "/site.webmanifest"} />
     <link rel="sitemap" href="/sitemap.xml" />
     {head.markdown && <link rel="alternate" type="text/markdown" href={head.markdown} />}
+    <ClientRouter />
     <script is:inline>
-      try {
-        const t = localStorage.getItem("goesm-theme");
-        if (t === "dark" || (!t && matchMedia("(prefers-color-scheme: dark)").matches)) document.documentElement.classList.add("dark");
-      } catch {}
+      // The theme, before the first paint. The client router replaces the
+      // attributes of <html> with the next page's, so it is set again after
+      // every swap.
+      (() => {
+        const apply = () => {
+          try {
+            const t = localStorage.getItem("goesm-theme");
+            if (t === "dark" || (!t && matchMedia("(prefers-color-scheme: dark)").matches)) document.documentElement.classList.add("dark");
+          } catch {}
+        };
+        apply();
+        document.addEventListener("astro:after-swap", apply);
+      })();
     </script>
   </head>
   <body class={isDoc ? "layout-doc" : "layout-home"}>

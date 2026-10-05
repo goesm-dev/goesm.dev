@@ -29,6 +29,16 @@ test("wantsMarkdown", () => {
   }
 });
 
+test("the site's own pages get HTML from fetch", async () => {
+  assert.equal(wantsMarkdown("*/*", "same-origin"), false);
+  assert.equal(wantsMarkdown("*/*", "cross-site"), true);
+  assert.equal(wantsMarkdown("text/markdown", "same-origin"), true);
+  // Astro's client router fetches the next page without naming HTML.
+  const res = await handle(new Request("https://goesm.dev/guide/", { headers: { accept: "*/*", "sec-fetch-site": "same-origin" } }), assets);
+  assert.equal(res.headers.get("content-type"), "text/html; charset=utf-8");
+  assert.equal(await res.text(), "<h1>Guide</h1>");
+});
+
 test("markdownPath", () => {
   assert.equal(markdownPath("/"), "/index.md");
   assert.equal(markdownPath("/ja/"), "/ja.md");
@@ -40,7 +50,7 @@ test("curl gets Markdown", async () => {
   const res = await get("/guide/");
   assert.equal(res.status, 200);
   assert.equal(res.headers.get("content-type"), "text/markdown; charset=utf-8");
-  assert.equal(res.headers.get("vary"), "Accept");
+  assert.equal(res.headers.get("vary"), "Accept, Sec-Fetch-Site");
   assert.equal(await res.text(), "# Guide\n");
   assert.equal(await (await get("/")).text(), "# goesm\n");
 });
@@ -48,7 +58,7 @@ test("curl gets Markdown", async () => {
 test("browsers get HTML with a link to the Markdown", async () => {
   const res = await get("/guide/", browser);
   assert.equal(res.headers.get("content-type"), "text/html; charset=utf-8");
-  assert.equal(res.headers.get("vary"), "Accept");
+  assert.equal(res.headers.get("vary"), "Accept, Sec-Fetch-Site");
   assert.equal(res.headers.get("link"), '</guide.md>; rel="alternate"; type="text/markdown"');
   assert.equal(await res.text(), "<h1>Guide</h1>");
 });

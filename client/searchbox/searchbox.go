@@ -18,7 +18,12 @@ type Box struct {
 	done  chan struct{} // closed when the fetch in flight ends
 }
 
-func New(indexURL string) *Box { return &Box{url: indexURL} }
+// loaded holds the indexes fetched so far, by URL. The page's search island
+// starts again after every client-side navigation; the index it loaded on
+// an earlier page is not fetched again.
+var loaded = map[string]*search.Index{}
+
+func New(indexURL string) *Box { return &Box{url: indexURL, index: loaded[indexURL]} }
 
 // Load fetches the index once. It blocks until the response arrives (goesm
 // turns it, and its callers, into async functions). Calls while a fetch is
@@ -35,6 +40,7 @@ func (b *Box) Load() {
 	b.done = done
 	if text := fetchText(b.url); text != "" {
 		b.index = search.Parse(text)
+		loaded[b.url] = b.index
 	}
 	b.done = nil
 	close(done)
@@ -76,13 +82,18 @@ func fetchText(url string) string {
 	return s
 }
 
+var shortcut bool
+
 // OnShortcut clicks the element matching selector when "/" or Ctrl-K /
-// Cmd-K is pressed outside a text field. It does nothing outside a browser.
+// Cmd-K is pressed outside a text field. The listener is added once, and
+// looks the element up when the key is pressed, so it keeps working on the
+// pages the client router swaps in. It does nothing outside a browser.
 func OnShortcut(selector string) {
 	doc := js.Global().Get("document")
-	if !doc.Truthy() {
+	if shortcut || !doc.Truthy() {
 		return
 	}
+	shortcut = true
 	doc.Call("addEventListener", "keydown", js.FuncOf(func(this js.Value, args []js.Value) any {
 		e := args[0]
 		key := e.Get("key").String()
@@ -118,7 +129,11 @@ func Close(selector string) {
 	}
 }
 
-// Navigate goes to url.
+//goesm:import "astro:transitions/client" navigate
+func navigate(url string) js.Value
+
+// Navigate goes to url with Astro's client router, which swaps the page in
+// without reloading it (or loads it, where the router cannot).
 func Navigate(url string) {
-	js.Global().Get("location").Set("href", url)
+	navigate(url)
 }

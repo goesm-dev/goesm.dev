@@ -7,3 +7,12 @@ pnpm = "12.9.1"
 # Keep it at the version of the cf devDependency in package.json, which
 # cloudflare.config.ts imports.
 "npm:cf" = "1.0.0-beta.12"
+
+# The Cloudflare Workers deploy (cloudflare.config.ts), run by CI on main.
+[tasks.build]
+description = "Build the site and the Build Output for Cloudflare Workers"
+run = ["pnpm install --frozen-lockfile", "pnpm build:cf"]
+
+[tasks.deploy]
+description = "Upload the Build Output to Cloudflare Workers (after mise run build)"
+run = "pnpm exec cf deploy --prebuilt"

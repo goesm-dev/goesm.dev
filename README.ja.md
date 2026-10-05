@@ -57,3 +57,7 @@ pnpm build:cf     # dist/ と .cloudflare/output の Build Output を作る
 pnpm preview:cf   # Workers と同じ動きでローカルに配信
 pnpm run deploy   # ビルドしてアップロード (`cf auth login` が必要)
 ```
+
+CI は main へのマージごとに `mise run build` と `mise run deploy` でデプロイし、
+そのコミットに `vYYYY.M.N` のタグを付けます (N は月ごとに 0 から、UTC)。
+認証にはリポジトリのシークレット `CF_ID` と `CF_TOKEN` を使います。

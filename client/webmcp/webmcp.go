@@ -35,11 +35,29 @@ func Context() js.Value {
 	return js.Global().Get("navigator").Get("modelContext")
 }
 
+// tools are the tools registered so far, by name, and controllers the
+// AbortControllers whose signals unregister them.
+var (
+	tools       = map[string]Tool{}
+	controllers = map[string]js.Value{}
+)
+
 // Register registers t with the page's WebMCP context, if there is one.
+//
+// The islands that register tools start again on every page the client
+// router swaps in, so a tool may be registered again: the earlier one is
+// unregistered first (by aborting its signal, or with unregisterTool where
+// the browser has that instead). Where neither works, the tool registered
+// first stays, and runs the Run of the latest registration.
 func Register(t Tool) {
 	mc := Context()
 	if !mc.Truthy() {
 		return
+	}
+	_, again := tools[t.Name]
+	tools[t.Name] = t
+	if again {
+		unregister(mc, t.Name)
 	}
 	object := js.Global().Get("Object")
 	tool := object.New()
@@ -55,9 +73,32 @@ func Register(t Tool) {
 		if len(args) > 0 {
 			input = args[0]
 		}
-		return promise(func() string { return t.Run(input) })
+		run := tools[t.Name].Run
+		return promise(func() string { return run(input) })
 	}))
-	mc.Call("registerTool", tool)
+	controller := js.Global().Get("AbortController").New()
+	controllers[t.Name] = controller
+	options := object.New()
+	options.Set("signal", controller.Get("signal"))
+	try(func() { mc.Call("registerTool", tool, options) })
+}
+
+func unregister(mc js.Value, name string) {
+	if c, ok := controllers[name]; ok {
+		c.Call("abort")
+		delete(controllers, name)
+	}
+	if mc.Get("unregisterTool").Type() == js.TypeFunction {
+		try(func() { mc.Call("unregisterTool", name) })
+	}
+}
+
+// try calls f, and drops the exception it throws: a browser that has
+// unregistered the tool already may throw for unregisterTool, and one that
+// cannot unregister may throw for a second registerTool.
+func try(f func()) {
+	defer func() { recover() }()
+	f()
 }
 
 // promise runs f in a goroutine and returns a Promise of its text.

@@ -132,7 +132,9 @@ test("the first paint needs no request after the HTML", () => {
     const html = page(r);
     assert.doesNotMatch(html, /<link rel="stylesheet"/, r);
     assert.match(html, /<style>/, r);
-    assert.doesNotMatch(html.slice(0, html.indexOf("</head>")), /<script[^>]+src=/, `${r}: blocking script`);
+    // A module script (the client router's) runs after parsing and does not
+    // hold up the first paint; a classic script with src would.
+    assert.doesNotMatch(html.slice(0, html.indexOf("</head>")), /<script(?![^>]*type="module")(?![^>]*\b(?:async|defer)\b)[^>]+src=/, `${r}: blocking script`);
   }
 });
 

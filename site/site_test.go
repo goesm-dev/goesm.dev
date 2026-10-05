@@ -103,3 +103,33 @@ func TestSites(t *testing.T) {
 		t.Error("one search index for both sites")
 	}
 }
+
+func TestLLMs(t *testing.T) {
+	var paths []string
+	if err := json.Unmarshal([]byte(LLMsPathsJSON()), &paths); err != nil {
+		t.Fatal(err)
+	}
+	if got := strings.Join(paths, " "); got != "gosfc/llms gosfc/llms-full gosfc/ja/llms gosfc/ja/llms-full llms llms-full ja/llms ja/llms-full" {
+		t.Errorf("llms paths: %s", got)
+	}
+	for _, p := range paths {
+		if txt := LLMs("/" + p + ".txt"); !strings.HasPrefix(txt, "# ") {
+			t.Errorf("/%s.txt: %.80q", p, txt)
+		}
+	}
+	ja := LLMs("/gosfc/ja/llms.txt")
+	for _, want := range []string{"# gosfc\n", "(https://goesm.dev/gosfc/ja/guide/go-block.md)", "[English](https://goesm.dev/gosfc/llms.txt)", "[goesm](https://goesm.dev/ja/llms.txt)"} {
+		if !strings.Contains(ja, want) {
+			t.Errorf("/gosfc/ja/llms.txt has no %q", want)
+		}
+	}
+	var pages []struct{ Slug, Route string }
+	if err := json.Unmarshal([]byte(MarkdownPagesJSON()), &pages); err != nil {
+		t.Fatal(err)
+	}
+	for _, p := range pages {
+		if md := PageMarkdown(p.Route); !strings.HasPrefix(md, "# ") {
+			t.Errorf("%s: %.80q", p.Route, md)
+		}
+	}
+}

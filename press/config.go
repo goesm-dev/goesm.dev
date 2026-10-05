@@ -100,6 +100,9 @@ type UI struct {
 	CopyCode      string `json:"copyCode"`
 	Copied        string `json:"copied"`
 	Footer        string `json:"footer"`
+	ViewMarkdown  string `json:"viewMarkdown"` // link to the page's Markdown version
+	// OtherPages heads the pages outside the sidebar in llms.txt.
+	OtherPages string `json:"-"`
 	// Containers are the default titles of ::: blocks and GitHub alerts.
 	Containers map[string]string `json:"-"`
 }

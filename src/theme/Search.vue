@@ -39,7 +39,8 @@
 // The search dialog. Everything here is Go compiled by goesm: loading the
 // index with fetch, ranking and snippets (package press/search), and the
 // keyboard shortcut. The index is the plain-text file press writes at build
-// time for the page's locale.
+// time for the page's locale. The same index answers AI agents: with WebMCP,
+// the page registers search_docs, get_page and list_pages tools.
 import (
 	"goesm.dev/client/searchbox"
 	"goesm.dev/press/search"
@@ -50,6 +51,8 @@ type Props struct {
 	Label     string
 	Hint      string
 	NoResults string
+	Site      string
+	Llms      string
 }
 
 label := props.Label
@@ -96,4 +99,5 @@ func Reset() {
 }
 
 searchbox.OnShortcut(".search-button")
+box.RegisterTools(props.Site, props.Llms)
 </script>

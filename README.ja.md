@@ -16,7 +16,8 @@ Go で書いた VitePress 風のドキュメントエンジンを goesm でコ�
 | `site/` | 2 つのサイトの設定と、ページから呼ぶ関数 |
 | `content/en`、`content/ja` | goesm のページ (Markdown) |
 | `content/gosfc/en`、`content/gosfc/ja` | gosfc のページ (`/gosfc/` 以下) |
-| `client/` | ブラウザで動く Go (検索、ライブデモ、ページの補助) |
+| `client/` | ブラウザで動く Go (検索、WebMCP のツール、ライブデモ、ページの補助) |
+| `worker/` | 静的ファイルの前に置く Worker。HTML を求めないクライアントに Markdown を返す |
 | `src/` | Astro のページと Vue のテーマ。コンポーネントの `<script setup>` は Go |
 | `cmd/syncdocs` | goesm と gosfc のドキュメントを `go.mod` のバージョンでコピー |
 | `third_party/gosfc` | gosfc の git submodule (Vite と Astro のパッケージ) |
@@ -51,8 +52,10 @@ CI は同じものを `-check` 付きで実行します。
 
 ## デプロイ
 
-サイトは Cloudflare Workers で、静的アセットだけの Worker として動きます。
-`cloudflare.config.ts` が Worker を、`wrangler.config.ts` が `dist/` を指定します。
+サイトは Cloudflare Workers で動きます。`cloudflare.config.ts` が Worker を、
+`wrangler.config.ts` が `dist/` を指定します。静的ファイルは Cloudflare がそのまま返し、
+`worker/` のスクリプトはページの URL でだけ先に動いて、HTML を求めないクライアント
+(curl や AI エージェント) にページの Markdown を返します。
 
 ```sh
 pnpm build:cf     # dist/ と .cloudflare/output の Build Output を作る

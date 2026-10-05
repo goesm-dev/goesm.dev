@@ -80,7 +80,9 @@ type Head struct {
 	Canonical   string         `json:"canonical"`
 	Alternates  []altLink      `json:"alternates"`
 	UI          press.UI       `json:"ui"`
-	Search      string         `json:"search"` // URL of the locale's search index
+	Search      string         `json:"search"`   // URL of the locale's search index
+	Markdown    string         `json:"markdown"` // URL of the page's Markdown version
+	LLMs        string         `json:"llms"`     // URL of the locale's llms.txt
 	Home        string         `json:"home"`
 	Social      []press.Social `json:"social"`
 }
@@ -101,6 +103,7 @@ func HeadJSON(r string) string {
 		Locale: loc.Code,
 		UI:     loc.UI,
 		Search: s.Config.Base + "/search/" + loc.Code + ".txt",
+		LLMs:   s.LLMsPath(loc, false),
 		Home:   s.Home(loc),
 		Social: s.Config.Social,
 		Title:  loc.UI.NotFound + " | " + loc.Title,
@@ -111,6 +114,7 @@ func HeadJSON(r string) string {
 		return mustJSON(h)
 	}
 	h.Found = true
+	h.Markdown = press.MarkdownPath(p.Route)
 	h.Layout = p.Layout
 	h.Description = p.Description
 	if h.Description == "" {
@@ -178,6 +182,8 @@ type DocView struct {
 	HTML    string          `json:"html"`
 	Outline []press.Heading `json:"outline"`
 	Edit    string          `json:"edit"`
+	// Markdown is the path of the page's Markdown version.
+	Markdown string `json:"markdown"`
 	// Synced is the source file for a page synced from another repository
 	// ("goesm-dev/goesm: docs/otelc.md"); the edit link then points there.
 	Synced string        `json:"synced"`
@@ -194,7 +200,7 @@ func Doc(r string) DocView {
 	}
 	html, outline := s.Render(p)
 	edit, synced := s.EditLink(p)
-	v := DocView{Title: p.Title, HTML: html, Outline: outline, Edit: edit, UI: p.Locale.UI}
+	v := DocView{Title: p.Title, HTML: html, Outline: outline, Edit: edit, Markdown: press.MarkdownPath(p.Route), UI: p.Locale.UI}
 	if synced {
 		v.Synced = strings.TrimPrefix(s.Config.Sources[p.Source].Repo, "https://github.com/") + ": " + p.SourcePath
 	}

@@ -38,6 +38,7 @@ const isDoc = head.found && head.layout === "doc";
     <meta property="og:image" content="https://goesm.dev/goesm.png" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="sitemap" href="/sitemap.xml" />
+    {head.markdown && <link rel="alternate" type="text/markdown" href={head.markdown} />}
     <script is:inline>
       try {
         const t = localStorage.getItem("goesm-theme");
@@ -49,7 +50,7 @@ const isDoc = head.found && head.layout === "doc";
     <a class="skip-link" href="#main">{ui.skipToContent}</a>
     <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true" tabindex="-1" />
     <NavBar route={route}>
-      <Search slot="search" client:idle index={head.search} label={ui.search} hint={ui.searchHint} no-results={ui.noResults} />
+      <Search slot="search" client:idle index={head.search} label={ui.search} hint={ui.searchHint} no-results={ui.noResults} site={head.site} llms={head.llms} />
       <ThemeToggle slot="theme" client:idle label={ui.toggleTheme} />
     </NavBar>
     {

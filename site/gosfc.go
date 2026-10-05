@@ -28,7 +28,7 @@ var gosfcEn = &press.Locale{
 	Lang:        "en",
 	Label:       "English",
 	Title:       "gosfc",
-	Description: "Real Go in the <script setup> of Vue components, and Go packages imported from Astro pages.",
+	Description: "Real Go in Vue components and .astro files: the <script setup> of a .vue file, and the frontmatter and <script> of an .astro file.",
 	Nav: []press.NavItem{
 		{Text: "Guide", Link: "/guide/", Match: "/guide/"},
 		{Text: "Reference", Link: "/reference/architecture", Match: "/reference/"},
@@ -43,7 +43,7 @@ var gosfcJa = &press.Locale{
 	Lang:        "ja",
 	Label:       "日本語",
 	Title:       "gosfc",
-	Description: "Vue コンポーネントの <script setup> に本物の Go を書き、Astro のページから Go のパッケージを import します。",
+	Description: "Vue コンポーネントと .astro ファイルに本物の Go を書きます。.vue ファイルの <script setup>、.astro ファイルのフロントマターと <script> が Go になります。",
 	Nav: []press.NavItem{
 		{Text: "ガイド", Link: "/guide/", Match: "/guide/"},
 		{Text: "リファレンス", Link: "/reference/architecture", Match: "/reference/"},

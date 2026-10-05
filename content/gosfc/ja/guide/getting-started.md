@@ -1,5 +1,5 @@
 ---
-description: Astro か Vite のプロジェクトに gosfc を追加し、最初の <script setup lang="go"> を書きます。
+description: Astro か Vite のプロジェクトに gosfc を追加し、Vue コンポーネントや .astro ファイルに最初の Go を書きます。
 ---
 
 # はじめに

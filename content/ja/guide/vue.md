@@ -1,12 +1,13 @@
 ---
-description: gosfc は Vue コンポーネントの <script setup> で本物の Go を動かし、Astro のページから Go のパッケージを import できるようにします。ドキュメントは goesm.dev/gosfc にあります。
+description: gosfc は Vue コンポーネントと .astro ファイルで本物の Go を動かし、JavaScript から Go のパッケージを import できるようにします。ドキュメントは goesm.dev/gosfc にあります。
 ---
 
 # Vue と Astro (gosfc)
 
-[gosfc](/gosfc/ja/) は goesm を Vue と Astro につなぎます。Vue コンポーネントに
-`<script setup lang="go">` を書けるようになり、Astro のページから `go:` で Go の
-パッケージを import できます。Go のコンパイルは goesm が行い、それ以外はいつもどおり
+[gosfc](/gosfc/ja/) は goesm を Vue と Astro につなぎます。Vue コンポーネントには
+`<script setup lang="go">` を、`.astro` ファイルには Go のフロントマター (`---go`) と
+`<script lang="go">` を書けます。JavaScript のモジュールや Astro のページからは `go:` で
+Go のパッケージを import できます。Go のコンパイルは goesm が行い、それ以外はいつもどおり
 Vue、Vite、Astro が担当します。
 
 ```vue
@@ -34,6 +35,6 @@ total := cart.Total(items)
 です ([このサイトの作り方](./this-site.md) を参照)。
 
 ::: tip gosfc のドキュメント
-導入方法、Go ブロックの決まり、JavaScript からの Go の import、ベンチマークは
+導入方法、Go ブロックの決まり、`.astro` ファイルでの Go、JavaScript からの Go の import、ベンチマークは
 [gosfc のドキュメント](/gosfc/ja/guide/) にあります。
 :::

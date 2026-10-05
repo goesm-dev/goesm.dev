@@ -32,7 +32,7 @@ features:
     details: go/packages and go/types are the frontend. go.mod, gopls, go vet and go test keep working on the same code.
   - icon: 🧩
     title: Vue and Astro
-    details: With gosfc, <script setup lang="go"> runs real Go in Vue components, and Astro pages import Go packages directly.
+    details: With gosfc, real Go runs in the <script setup lang="go"> of Vue components and in the ---go frontmatter of .astro files.
     link: /guide/vue
   - icon: 🔭
     title: Zero-code instrumentation

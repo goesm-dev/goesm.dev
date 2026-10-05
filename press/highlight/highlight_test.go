@@ -14,6 +14,8 @@ func TestCode(t *testing.T) {
 		{"ts", `import { Total } from "./cart.ts";`, []string{`<span class="hl-kw">import</span>`, `<span class="hl-str">&quot;./cart.ts&quot;</span>`}},
 		{"sh", "go tool goesm emit-ts -o out ./cart # build", []string{`<span class="hl-fn">go</span>`, `<span class="hl-attr">-o</span>`, `<span class="hl-com"># build</span>`}},
 		{"vue", "<template>\n  <div>{{ total }}</div>\n</template>\n<script setup lang=\"go\">\nx := 1\n</script>", []string{`<span class="hl-tag">template</span>`, `<span class="hl-attr">lang</span>=<span class="hl-str">&quot;go&quot;</span>`, `<span class="hl-num">1</span>`}},
+		{"astro", "---go\nimport \"strconv\"\n\nn := 1\n---\n<p>{n}</p>", []string{`<span class="hl-com">---go</span>`, `<span class="hl-kw">import</span>`, `<span class="hl-num">1</span>`, `<span class="hl-tag">p</span>`}},
+		{"astro", "---\nconst n = 1;\n---\n<p>{n}</p>", []string{`<span class="hl-kw">const</span>`, `<span class="hl-tag">p</span>`}},
 		{"toml", "[tools]\ngo = \"1.27.1\"", []string{`<span class="hl-type">[tools]</span>`, `<span class="hl-attr">go </span>`}},
 		{"json", `{"type": "module", "n": 1}`, []string{`<span class="hl-attr">&quot;type&quot;</span>`, `<span class="hl-str">&quot;module&quot;</span>`}},
 		{"text", "<a>", []string{"&lt;a&gt;"}},

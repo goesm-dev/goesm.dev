@@ -1,5 +1,5 @@
 ---
-description: Add gosfc to an Astro or Vite project and write your first <script setup lang="go">.
+description: Add gosfc to an Astro or Vite project and write your first Go in a Vue component or an .astro file.
 ---
 
 # Getting started

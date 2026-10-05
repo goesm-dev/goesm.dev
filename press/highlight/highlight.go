@@ -413,14 +413,21 @@ func value(b *strings.Builder, t string) {
 // is highlighted as Go when lang="go", else as TypeScript.
 func markup(b *strings.Builder, s string) {
 	i := 0
-	// Astro frontmatter.
-	if strings.HasPrefix(s, "---\n") {
-		if end := strings.Index(s[4:], "\n---"); end >= 0 {
-			span(b, "com", "---")
+	// Astro frontmatter: TypeScript, or Go after gosfc's ---go.
+	for _, f := range []struct {
+		open string
+		lang *langDef
+	}{{"---\n", tsLang}, {"---go\n", goLang}} {
+		if !strings.HasPrefix(s, f.open) {
+			continue
+		}
+		n := len(f.open)
+		if end := strings.Index(s[n:], "\n---"); end >= 0 {
+			span(b, "com", f.open[:n-1])
 			b.WriteByte('\n')
-			clike(b, s[4:4+end+1], tsLang)
+			clike(b, s[n:n+end+1], f.lang)
 			span(b, "com", "---")
-			i = 4 + end + 4
+			i = n + end + 4
 		}
 	}
 	for i < len(s) {

@@ -1,12 +1,13 @@
 ---
-description: gosfc runs real Go in the <script setup> of Vue components and lets Astro pages import Go packages. Its documentation is at goesm.dev/gosfc.
+description: gosfc runs real Go in Vue components and .astro files, and lets JavaScript import Go packages. Its documentation is at goesm.dev/gosfc.
 ---
 
 # Vue and Astro (gosfc)
 
 [gosfc](/gosfc/) connects goesm to Vue and Astro. A Vue component can have a
-`<script setup lang="go">`, and an Astro page can import a Go package with a
-`go:` specifier. goesm compiles the Go; Vue, Vite and Astro do the rest as
+`<script setup lang="go">`, an `.astro` file a Go frontmatter (`---go`) and a
+`<script lang="go">`, and a JavaScript module or an Astro page can import a Go
+package with a `go:` specifier. goesm compiles the Go; Vue, Vite and Astro do the rest as
 usual.
 
 ```vue
@@ -34,6 +35,6 @@ This site is built that way: its theme is Vue components whose script is Go
 (see [How this site is built](./this-site.md)).
 
 ::: tip gosfc documentation
-Setup, the rules of the Go block, importing Go from JavaScript and the
-benchmark are in the [gosfc documentation](/gosfc/guide/).
+Setup, the rules of the Go block, Go in `.astro` files, importing Go from
+JavaScript and the benchmark are in the [gosfc documentation](/gosfc/guide/).
 :::

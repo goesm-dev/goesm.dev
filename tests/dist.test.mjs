@@ -53,6 +53,29 @@ test("each locale has a 404.html where Cloudflare looks for it", () => {
   assert.match(read("gosfc/ja/404.html"), /<html lang="ja"[\s\S]*href="\/gosfc\/ja\/"/);
 });
 
+test("every page has a Markdown version", () => {
+  const mdPath = (r) => (r === "/" ? "index.md" : r.slice(1, -1) + ".md");
+  for (const r of routes) {
+    const md = read(mdPath(r));
+    assert.match(md, /^# \S/, `${r}: no title`);
+    assert.ok(page(r).includes(`<link rel="alternate" type="text/markdown" href="/${mdPath(r)}">`), `${r}: alternate link`);
+    const prose = md.replace(/^(```|~~~)[^]*?^\1/gm, "");
+    assert.doesNotMatch(prose, /^\s*<!--|^:::|\]\(\.{0,2}\/(?!\/)/m, `${r}: comment, container or relative link left`);
+  }
+  assert.match(read("guide/getting-started.md"), /\]\(https:\/\/goesm\.dev\/guide\/[^)]*\.md[)#]/);
+});
+
+test("each site and language has an llms.txt", () => {
+  for (const [dir, title] of [["", "goesm"], ["ja/", "goesm"], ["gosfc/", "gosfc"], ["gosfc/ja/", "gosfc"]]) {
+    const llms = read(dir + "llms.txt");
+    assert.match(llms, new RegExp(`^# ${title}\n\n> \\S`), dir);
+    const links = [...llms.matchAll(/\]\((https:\/\/goesm\.dev\/[^)]*\.md)\)/g)].map((m) => m[1]);
+    assert.ok(links.length >= 8, `${dir}llms.txt: ${links.length} pages`);
+    for (const l of links) assert.ok(existsSync(new URL(l.slice("https://goesm.dev/".length), dist)), l);
+    assert.ok(read(dir + "llms-full.txt").length > 20_000, `${dir}llms-full.txt`);
+  }
+});
+
 test("doc pages are rendered at build time", () => {
   const html = page("/guide/getting-started/");
   assert.match(html, /<h2 id="install" tabindex="-1">Install/);

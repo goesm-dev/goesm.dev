@@ -47,7 +47,8 @@ func (b *Box) Search(q string) []search.Result {
 	return b.index.Search(q, 20)
 }
 
-// fetchText GETs url with the browser's fetch and waits for the body.
+// fetchText GETs url with the browser's fetch and waits for the body. It
+// returns "" when the request fails or the response is not a 2xx.
 func fetchText(url string) string {
 	ch := make(chan string, 1)
 	var onText, onResp, onErr js.Func
@@ -60,6 +61,10 @@ func fetchText(url string) string {
 		return nil
 	})
 	onResp = js.FuncOf(func(this js.Value, args []js.Value) any {
+		if !args[0].Get("ok").Bool() {
+			ch <- ""
+			return nil
+		}
 		args[0].Call("text").Call("then", onText, onErr)
 		return nil
 	})

@@ -83,7 +83,7 @@ browser:
 
 | Island | Go package | What it does | Size (gzip) |
 | --- | --- | --- | --- |
-| Search | `client/searchbox`, `press/search` | loads the locale's index, ranks results, builds snippets | 8 KB |
+| Search | `client/searchbox`, `press/search`, `client/webmcp` | loads the locale's index, ranks results, builds snippets; the WebMCP tools | 9 KB |
 | Live demo (home) | `client/demo` | the cart: Go `int` arithmetic on every click | 3 KB |
 | Page enhancements | `client/enhance` | copy buttons, the outline following the scroll | 1.5 KB |
 | Theme toggle | (its own Go block) | dark mode, remembered in `localStorage` | 1 KB |
@@ -96,6 +96,30 @@ plain-text index of every section at build time, and the browser loads it on
 the first search. The query code avoids `strings`, `sort` and `strconv` on
 purpose: with goesm today, importing them also brings in Unicode tables and
 reflection, which would make the island many times larger.
+
+## For AI agents
+
+The site is written for programs as well as for people:
+
+- Every page has a Markdown version next to it: `/guide/getting-started/` is
+  also `/guide/getting-started.md`, with includes expanded, containers as block
+  quotes and absolute links. Each page links to it ("View as Markdown", and a
+  `<link rel="alternate" type="text/markdown">`).
+- Each site and language has an [llms.txt](https://llmstxt.org/) listing its
+  pages, and an `llms-full.txt` with all of them: `/llms.txt`, `/ja/llms.txt`,
+  `/gosfc/llms.txt` and `/gosfc/ja/llms.txt`.
+- The Worker in front of the static files (`worker/index.ts`) looks at the
+  `Accept` header. A browser asks for HTML and gets the page; `curl`, `fetch`
+  and other clients that do not ask for HTML get the Markdown from the same
+  URL. `curl https://goesm.dev/guide/` prints Markdown.
+- In a browser with [WebMCP](https://github.com/webmachinelearning/webmcp),
+  the page registers three read-only tools with `document.modelContext`, so
+  an agent working in the page can use them instead of reading the screen:
+  `search_docs` (the search dialog's index), `get_page` (a page as Markdown)
+  and `list_pages` (the llms.txt). They are Go too, in the search island.
+
+The Markdown and the llms.txt files are written by press at build time, from
+the same pages as the HTML.
 
 ## No WebAssembly needed
 

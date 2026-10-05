@@ -83,7 +83,7 @@ Astro はこれらのコンポーネントをビルド時に HTML にします�
 
 | アイランド | Go のパッケージ | すること | サイズ (gzip) |
 | --- | --- | --- | --- |
-| 検索 | `client/searchbox`、`press/search` | ロケールのインデックスを読み込み、順位付けとスニペット作成 | 8 KB |
+| 検索 | `client/searchbox`、`press/search`、`client/webmcp` | ロケールのインデックスを読み込み、順位付けとスニペット作成。WebMCP のツール | 9 KB |
 | ライブデモ (ホーム) | `client/demo` | カート。クリックのたびに Go の `int` で計算 | 3 KB |
 | ページの補助 | `client/enhance` | コピーボタン、スクロールに追従する目次 | 1.5 KB |
 | テーマ切り替え | (コンポーネント内の Go) | ダークモード。`localStorage` に記憶 | 1 KB |
@@ -96,6 +96,29 @@ Vue 本体のほかに、goesm のランタイムと `syscall/js` を共有し�
 読み込みます。検索のコードは、あえて `strings`、`sort`、`strconv` を使っていません。
 今の goesm では、これらを import すると Unicode のテーブルやリフレクションも一緒に
 入り、アイランドが何倍にも大きくなるためです。
+
+## AI エージェント向け
+
+このサイトは、人だけでなくプログラムからも読めるように作っています。
+
+- 各ページには Markdown 版があります。`/guide/getting-started/` の Markdown 版は
+  `/guide/getting-started.md` です。インクルードを展開し、コンテナを引用に変え、
+  リンクを絶対 URL にしています。各ページからは「Markdown で表示」のリンクと
+  `<link rel="alternate" type="text/markdown">` でたどれます。
+- サイトと言語ごとに、ページの一覧である [llms.txt](https://llmstxt.org/) と、
+  全ページをまとめた `llms-full.txt` があります。場所は `/llms.txt`、`/ja/llms.txt`、
+  `/gosfc/llms.txt`、`/gosfc/ja/llms.txt` です。
+- 静的ファイルの前に置いた Worker (`worker/index.ts`) は `Accept` ヘッダーを見ます。
+  HTML を求めるブラウザにはページを返し、`curl` や `fetch` など HTML を求めない
+  クライアントには、同じ URL で Markdown を返します。`curl https://goesm.dev/ja/guide/`
+  の結果は Markdown です。
+- [WebMCP](https://github.com/webmachinelearning/webmcp) に対応したブラウザでは、
+  ページが読み取り専用のツールを 3 つ `document.modelContext` に登録します。ページで
+  作業する AI エージェントは、画面を読む代わりにこれらを使えます。検索ダイアログの
+  インデックスを引く `search_docs`、ページを Markdown で返す `get_page`、llms.txt を
+  返す `list_pages` です。これらも Go で、検索のアイランドに入っています。
+
+Markdown 版と llms.txt は、HTML と同じページから press がビルド時に書き出します。
 
 ## WebAssembly は不要でした
 

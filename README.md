@@ -17,7 +17,8 @@ How it fits together is explained on the site, in
 | `site/` | the configuration of both sites and the functions the pages call |
 | `content/en`, `content/ja` | the goesm pages, in Markdown |
 | `content/gosfc/en`, `content/gosfc/ja` | the gosfc pages, served under `/gosfc/` |
-| `client/` | Go that runs in the browser (search, live demo, page enhancements) |
+| `client/` | Go that runs in the browser (search, WebMCP tools, live demo, page enhancements) |
+| `worker/` | the Worker in front of the static files: Markdown for clients that do not ask for HTML |
 | `src/` | Astro pages and the Vue theme; the components' `<script setup>` is Go |
 | `cmd/syncdocs` | copies the goesm and gosfc docs at the versions in `go.mod` |
 | `third_party/gosfc` | gosfc as a git submodule, for its Vite and Astro packages |
@@ -52,9 +53,10 @@ CI runs the same with `-check`.
 
 ## Deploy
 
-The site runs on Cloudflare Workers as a Worker with static assets only:
-`cloudflare.config.ts` describes the Worker and `wrangler.config.ts` points it
-at `dist/`.
+The site runs on Cloudflare Workers: `cloudflare.config.ts` describes the
+Worker and `wrangler.config.ts` points it at `dist/`. Cloudflare serves the
+static files; the script in `worker/` runs first for page URLs and answers
+clients that do not ask for HTML (curl, AI agents) with the page's Markdown.
 
 ```sh
 pnpm build:cf     # dist/, then the Build Output in .cloudflare/output

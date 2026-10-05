@@ -6,7 +6,10 @@
       </p>
       <article class="vp-doc" v-html="doc.html"></article>
       <footer class="doc-footer">
-        <a class="edit-link" :href="doc.edit" target="_blank" rel="noreferrer">{{ doc.ui.editPage }}</a>
+        <p class="doc-links">
+          <a class="edit-link" :href="doc.edit" target="_blank" rel="noreferrer">{{ doc.ui.editPage }}</a>
+          <a class="edit-link" :href="doc.markdown" type="text/markdown">{{ doc.ui.viewMarkdown }}</a>
+        </p>
         <nav class="prev-next" aria-label="Pager">
           <a v-if="doc.prev.link" class="pager prev" :href="doc.prev.link">
             <span class="pager-label">{{ doc.ui.prev }}</span>

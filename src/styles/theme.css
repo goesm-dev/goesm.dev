@@ -560,6 +560,13 @@ button {
   border-top: 1px solid var(--c-divider);
 }
 
+.doc-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin: 0;
+}
+
 .edit-link {
   font-size: 14px;
   font-weight: 500;

@@ -1315,8 +1315,7 @@ a.feature:hover {
 
   .search-label,
   .search-button kbd,
-  .locale-menu,
-  .social {
+  .locale-menu {
     display: none;
   }
 

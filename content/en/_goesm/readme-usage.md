@@ -56,7 +56,21 @@ goesm keeps the TypeScript module of every package it lowers in a cache, `goesm/
 - Go strings are byte strings: `rt.fromJSString(s)` in, `rt.toJSString(s)` out. Slices: `rt.sliceLit([...])` in, `rt.toArray(s)` out. Multiple results come back as an array, and an `error` as a Go interface value.
 - A function that may block (channel operations, `time.Sleep`, waiting on a mutex) is an `async function` and returns a Promise; the others are synchronous.
 
-`rt` is the runtime, which every module re-exports as `$runtime`. [examples/](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.1/examples) has runnable examples (the cart, standard library use, goroutines) with the JavaScript that calls them.
+`rt` is the runtime, which every module re-exports as `$runtime`. [examples/](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.2/examples) has runnable examples (the cart, standard library use, goroutines) with the JavaScript that calls them.
+
+### Calling JavaScript from Go
+
+A function declared without a body imports a function of an ES module, and its Go types say how the values are converted:
+
+```go
+//goesm:import "./format.ts" formatPrice
+func formatPrice(yen int, currency string) string
+
+//goesm:import "./api.ts" fetchUser await
+func fetchUser(id string) (User, error) // a Promise; an exception or rejection is the error
+```
+
+Strings, slices, maps, structs (as `encoding/json` names their fields), functions, `js.Value` and `any` cross the boundary, and a call costs a few nanoseconds more than the same call from JavaScript. [docs/js-imports.md](/reference/js-imports/) has the details; Vue components are used through [gosfc](https://github.com/goesm-dev/gosfc).
 
 ### Serving HTTP
 
@@ -73,4 +87,4 @@ import { Handler, $runtime as rt } from "./goesm-ts/example.com/app/api.ts";
 export default { fetch: rt.fetchHandler(Handler()) };
 ```
 
-Each request runs in its own goroutine, its body read in full first; the response is sent when the handler returns, or streams from its first flush (Server-Sent Events, Connect's server streaming). Under Workers, `os.Getenv` reads the Worker's text bindings and secrets with the `nodejs_compat` flag. The HTTP client is `fetch`. [docs/use-cases.md](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.1/docs/use-cases.md) lists what is supported where.
+Each request runs in its own goroutine, its body read in full first; the response is sent when the handler returns, or streams from its first flush (Server-Sent Events, Connect's server streaming). Under Workers, `os.Getenv` reads the Worker's text bindings and secrets with the `nodejs_compat` flag. The HTTP client is `fetch`. [docs/use-cases.md](/reference/use-cases/) lists what is supported where.

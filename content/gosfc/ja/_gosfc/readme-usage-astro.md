@@ -29,6 +29,8 @@
    <Summary />
    ```
 
+   `.astro` ファイルも Go で書けます。書き方は「[.astro ファイルで Go を使う](/gosfc/ja/guide/astro/)」で説明します。
+
 Vite だけで使う場合は `@vitejs/plugin-vue` の前に `@gosfc/vite` を置きます。
 
 ```js

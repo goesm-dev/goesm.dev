@@ -84,6 +84,9 @@ func main() {
 				"bench/README.md":             "/reference/benchmark/",
 				"CONTRIBUTING.md":             "/reference/contributing/",
 				"docs/releasing.md":           "/reference/releasing/",
+				"docs/js-imports.md":          "/reference/js-imports/",
+				"docs/concurrency.md":         "/reference/concurrency/",
+				"docs/use-cases.md":           "/reference/use-cases/",
 			},
 			sections: map[string]string{
 				"intro":        "/guide/",
@@ -107,6 +110,7 @@ func main() {
 				"intro":                        "/guide/",
 				"usage-astro":                  "/guide/getting-started/",
 				"writing-the-go-block":         "/guide/go-block/",
+				"go-in-astro-files":            "/guide/astro/",
 				"importing-go-from-javascript": "/guide/importing-go/",
 				"benchmark":                    "/guide/benchmark/",
 			},

@@ -1,12 +1,12 @@
 <!-- Synced by cmd/syncdocs. Edit the source instead. -->
 
-[bench/](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.1/bench) では、同じ Go のカーネルを goesm、[GopherJS](https://github.com/gopherjs/gopherjs)、Go 公式の `GOOS=js GOARCH=wasm`、[TinyGo](https://tinygo.org) の wasm ターゲットでコンパイルし、Node.js、Bun、Chromium で実行します。すべての結果をネイティブ Go と照合し、起動時間と出力サイズも計測します。ネイティブ Go と、同じカーネルを JavaScript で手書きしたものを基準として載せています。各カーネルの内容、出力のビルド方法と呼び出し方、公平性についての注意は [bench/README.ja.md](/ja/reference/benchmark/) にあります。ランタイムごとの全数値は [bench/results/results.md](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.1/bench/results/results.md) にあります。
+[bench/](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.2/bench) では、同じ Go のカーネルを goesm、[GopherJS](https://github.com/gopherjs/gopherjs)、Go 公式の `GOOS=js GOARCH=wasm`、[TinyGo](https://tinygo.org) の wasm ターゲットでコンパイルし、Node.js、Bun、Chromium で実行します。すべての結果をネイティブ Go と照合し、起動時間と出力サイズも計測します。ネイティブ Go と、同じカーネルを JavaScript で手書きしたものを基準として載せています。各カーネルの内容、出力のビルド方法と呼び出し方、公平性についての注意は [bench/README.ja.md](/ja/reference/benchmark/) にあります。ランタイムごとの全数値は [bench/results/results.md](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.2/bench/results/results.md) にあります。
 
 計測方法は次のとおりです。
 
 - どの実装についても、事前にビルドした出力を読み込んでから計測します。ビルドと TypeScript から JavaScript への変換は事前に済ませるので、どの計測値にも含まれません。出力の読み込み、wasm のコンパイルとインスタンス化にかかる時間は、カーネルの時間には含めず、起動時間に含めます。
 - ネイティブ Go については、`go build` で作ったバイナリの中で、同じ計測ループを Go で実行します。
-- 手書き JS については、[bench/js/handwritten.mjs](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.1/bench/js/handwritten.mjs) を ES モジュールとしてそのまま読み込みます。
+- 手書き JS については、[bench/js/handwritten.mjs](https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.2/bench/js/handwritten.mjs) を ES モジュールとしてそのまま読み込みます。
 - goesm については、`goesm build -minify` が出力した TypeScript を、goesm に組み込まれた esbuild で 1 つの ES モジュール `kernels.js` にバンドルし、それを読み込みます。
 - GopherJS については、`gopherjs build -m` が出力したスクリプトを読み込みます。Go wasm と TinyGo wasm については、`.wasm` ファイルと `wasm_exec.js` を読み込みます。
 - 各カーネルは JavaScript から呼び出します。ウォームアップとして 300 ms 以上かつ 3 回以上実行したあと、10 回以上かつ 1000 ms 以上計測し、その中央値を結果とします。1 回の実行が遅いカーネルでは、10 回に届かなくても、3 回以上かつ合計 10 秒以上計測した時点で計測を終えます。

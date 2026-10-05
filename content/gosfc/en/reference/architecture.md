@@ -33,7 +33,7 @@ Astro ─────────────── routing / SSR / SSG / island
 
 | Layer | Responsible for | Not responsible for |
 |---|---|---|
-| gosfc | Detecting the Go block in `.vue`, building synthetic Go, invoking goesm, exposing template bindings, preserving positions, the Vite plugin, the Astro integration | Go parsing / type checking / module and package resolution / lowering, compiling templates and styles, bundling, SSR |
+| gosfc | Detecting the Go block in `.vue` and the Go frontmatter / `<script lang="go">` in `.astro`, building synthetic Go, invoking goesm, exposing template bindings, preserving positions, the Vite plugin, the Astro integration | Go parsing / type checking / module and package resolution / lowering, compiling templates and styles, bundling, SSR |
 | goesm | The Go package graph, Go Modules, parsing, type checking, Go semantics, lowering to TypeScript, TS→Go source maps | Anything about Vue / SFCs |
 | Vue tooling | SFC parsing, template compilation, scoped CSS, HMR decisions | Go |
 | Vite / Rolldown | Dev server, TS→JS, bundling, source map composition | Go, SFCs |
@@ -43,11 +43,12 @@ Astro ─────────────── routing / SSR / SSG / island
 
 ```
 cmd/gosfc/          The Go-side CLI (`gosfc synth`). Added to the app's go.mod as a tool
-internal/synth/     <script setup lang="go"> → synthetic Go (uses only go/scanner)
-packages/vite/      @gosfc/vite: the Vite plugin. src/compile.js is the core of the SFC transform,
-                    src/goesm.js is the only boundary with goesm, runtime/bridge.js handles template bindings
+internal/synth/     <script setup lang="go"> (and the Go of .astro files) → synthetic Go (uses only go/scanner)
+packages/vite/      @gosfc/vite: the Vite plugin. src/compile.js is the core of the SFC and .astro transforms,
+                    src/goesm.js is the only boundary with goesm, runtime/bridge.js handles template bindings,
+                    runtime/astro.js the bindings of a Go frontmatter, runtime/convert.js the value conversions of both
 packages/astro/     @gosfc/astro: an integration that only configures @astrojs/vue + @gosfc/vite
-examples/astro/     The PoC (Astro → Vue → gosfc → goesm → Vite)
+examples/astro/     The PoC (Astro → Vue → gosfc → goesm → Vite), and an .astro page written in Go
 tests/              Node tests (Astro build, Vite build / SSR / HMR, diagnostics) and fixtures
 ```
 
@@ -102,6 +103,7 @@ return func(gosfcBinding string) any {
 
 * All user text is copied verbatim after `//line` directives. Go syntax is not changed. Diagnostics and source maps from go/parser, go/types, and goesm all point at positions in the `.vue` file. Positions in the generated file itself (`_gosfc/.../setup.go`) are never visible to the user.
 * Order: const / type declarations → a `var F func(...)` for each `func F(...)` → the rest in the original order. `func F() {...}` is replaced with `F=func() {...}`. `F=func` has the same length as `func F`, so columns do not shift either. Functions can refer to each other and recurse, and the bodies run from top to bottom (as in Vue's `setup()`). Calling a function before its declaration causes a nil func panic.
+* A `var` or a function without a body preceded by goesm's `//goesm:import` directive (a Vue component, a TypeScript function, any value of an ES module) is declared at package level with its directive, which is placed right before it with a `//line` directive giving the declaration's own position (a `//line` between them would end the doc comment goesm reads). goesm resolves a relative module against the `.vue` file named by the `//line` directive, and `@gosfc/vite` turns its import of that file into an absolute path, which Vite loads like any other module. A `js.Value` binding reaches the template as the value it holds, so a component works as `<Badge />`.
 * The returned lookup function is the entry point for template bindings. Values are boxed in `any`, so they reach the JS side with their Go type descriptors intact. Every binding is referenced here, so a variable used only from the template does not trigger Go's "declared and not used" error. Unused imports are a Go error as usual.
 * The package is placed in `_gosfc/<name>_vue/` under the same directory as the `.vue` file; this directory does not exist on disk (it is passed through goesm's overlay). The import path therefore becomes `<module>/<dir>/_gosfc/<name>_vue`, and `internal/` visibility works relative to the `.vue` file's location, just as in ordinary Go. Nothing is written to the user's source tree.
 * When the block declares `type Props struct {...}`, that type is placed at package level and the setup function becomes `func GosfcSetup(props Props)`. gosfc also generates `func GosfcProps() any { return Props{} }`, and the bridge looks at the fields of that type descriptor to build a Props value from the component's attributes (`useAttrs()`). The glue includes `defineOptions({ inheritAttrs: false })`, so the attributes do not fall through to the root element. The types of Props fields are limited to imported types and built-in types (because types in the block have not been declared yet).
@@ -140,7 +142,7 @@ Only one change was made on the goesm side for this PoC: adding `-overlay` to `b
 .vue ──MagicString──> rewritten .vue ──plugin-vue──> JS      (template / glue side)
 ```
 
-* Go diagnostics (syntax, types, imports, goesm lowering constraints) are reported at `.vue` positions from the start. They are passed to Vite / Astro errors as `src/features/cart/Summary.vue:17:21: cannot use "x" ... [go/types]` with a code frame.
+* Go diagnostics (syntax, types, imports, goesm lowering constraints) are reported at `.vue` (or `.astro`) positions from the start. They are passed to Vite / Astro errors as `src/features/cart/Summary.vue:17:21: cannot use "x" ... [go/types]` with a code frame.
 * For the generated code's map, gosfc simply returns the TS→Go map that goesm produces (whose sources are `.vue` and `.go`) from Vite's load hook, and leaves composition to Vite / Rolldown. Tests confirm that `Total(items)` in the bundle maps back to `Summary.vue:17` and `item.Price * item.Quantity` to `price.go:7`.
 * When a Go panic occurs during dev SSR, the stack trace goes through Vite's `ssrFixStacktrace` and points at `TmpPanic.vue:6` (tested).
 
@@ -152,10 +154,32 @@ There is no custom HMR runtime. The decisions and updates are those of `@vitejs/
 * So that the script changes even for a Go change that leaves the bindings unchanged, the glue passes a hash of the lowered code as an argument to `useGo` (plugin-vue compares scripts by AST, so a comment would not be enough).
 * A change to a `.go` file invalidates and reloads the `.vue` files that use that package. `addWatchFile` is also registered, so recompilation also happens on a dev server with HMR disabled and with `vite build --watch`.
 * Generated modules are invalidated in Vite's module graph only when their content changes, and the new version is loaded via the `?t=` that Vite adds.
+* For `.astro` files, Astro's own HMR compares the old and new source to update styles alone when only styles changed; gosfc shows it the rewritten source the same way. A `.go` change invalidates the `.astro` files and the `<script lang="go">` modules that use the package.
+* Only the user's `.go` files are watched; files in GOROOT and the module cache, and goesm's replacements of standard packages, are not.
 
 ## 9. Astro
 
 `@gosfc/astro` only configures `@astrojs/vue` (if not already present) and `@gosfc/vite`. To Astro, a component with a Go block is an ordinary Vue component: without `client:*` it becomes static HTML through Astro's SSR, and with `client:load` it becomes an island that hydrates the same SSR HTML. There is no separate renderer such as Go-native SSR; SSR and the client run the same lowered modules.
+
+### Go in .astro files
+
+An `.astro` file whose frontmatter opens with `---go`, or that contains `<script lang="go">`, is rewritten in the plugin's `load` hook, not in `transform`. Astro's own plugin compiles `.astro` files in its `transform` (also `enforce: "pre"`, and it may run first), and it reads the source for its sub-requests (`?astro&type=script`, styles) through the plugin container's `load`. Rewriting in `load` means Astro only ever sees a TypeScript frontmatter and plain `<script>` elements.
+
+* **Frontmatter.** `compileAstro` passes the Go frontmatter through the same path as a `.vue` block (`gosfc synth`, then `goesm emit-ts -overlay`, with the synthetic package in `_gosfc/<file>_astro` next to the file). synth is told that JavaScript imports are allowed: a spec whose path is a relative or absolute path, `@scope/...`, or contains `:` (`synth.IsJSImport`) is blanked out of the Go file, keeping offsets, and returned as a JS import. The frontmatter is replaced with TypeScript of the same line count, so template positions do not move:
+
+  ```ts
+  ---
+  import Line from "../features/cart/Line.astro";
+  import { GosfcSetup as __gosfc_setup } from "gosfc:goesm/example.com/app/src/pages/_gosfc/go_astro.<hash>.ts";
+  import { runGo as __gosfc_run } from "gosfc:astro.js";
+  const __gosfc = await __gosfc_run(__gosfc_setup, null, Astro.props);
+  const total = __gosfc("total");
+  ---
+  ```
+
+  `runtime/astro.js` runs the setup once per render and awaits it when it blocks, fills `Props` from `Astro.props` with the rules of the Vue bridge, and converts values with the same code (`runtime/convert.js`). Astro renders a template once, so there is no reactivity. The package is imported by its content-addressed id rather than `go:`, because a `go:` import from a module that is not a `.vue` file compiles the package without the overlay.
+* **Client scripts.** Each `<script lang="go">` becomes `<script>import "gosfc:astro-script/<n>/<file>.js"</script>`, an ordinary processed script to Astro. The id names the file and the index because Astro builds the client in a Vite environment of its own: loading the id re-reads the `.astro` file, compiles its n-th Go script as a goesm program of its own, and returns `import { GosfcSetup } from "<id>"; GosfcSetup();`. In the SSR environment Astro does not load scripts, and in the client environment `.astro` modules are not rewritten (Astro replaces them with a stub).
+* Vite's dependency scanner reads the `<script>` elements of `.astro` files as TypeScript; for a file with Go it is shown the JavaScript imports of the Go frontmatter and of the other scripts instead.
 
 ## 10. Security
 
@@ -173,7 +197,7 @@ Not yet implemented:
 * Declaring methods and generic functions inside the Go block (they must go in a Go package).
 * Reflecting in the template changes to Go state that happen other than through calls via bindings, such as from goroutines or timers.
 * Modifying Go values from the template (`v-model` and so on).
-* JS value ⇔ Go value conversion is limited to goesm's `toJS` and string arguments. There is no conversion for calling, from the template, a Go function that takes a struct or slice argument (goesm does not have a JS calling ABI yet).
+* JS value ⇔ Go value conversion for template bindings is limited to goesm's `toJS` and string arguments. There is no conversion for calling, from the template, a Go function that takes a struct or slice argument (goesm has a calling ABI only for Go calling JavaScript, `//goesm:import`).
 
 Open questions:
 

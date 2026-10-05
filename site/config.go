@@ -17,6 +17,9 @@ var guideSidebar = func(guide, intro, start, vue, status, perf, this, ref string
 		{Text: ref, Items: []press.SidebarItem{
 			{Link: "/reference/architecture"},
 			{Link: "/reference/example-output"},
+			{Link: "/reference/use-cases"},
+			{Link: "/reference/js-imports"},
+			{Link: "/reference/concurrency"},
 			{Link: "/reference/conformance"},
 			{Link: "/reference/otelc"},
 			{Link: "/reference/gopherjs-comparison"},

@@ -85,6 +85,7 @@ test("every page has the favicon, touch icon and manifest", () => {
   for (const r of ["/", "/ja/guide/", "/gosfc/", "/gosfc/ja/guide/go-block/"]) {
     const html = page(r);
     assert.ok(html.includes('<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">'), r);
+    assert.ok(html.includes('<link rel="icon" href="/favicon.svg" type="image/svg+xml">'), r);
     assert.ok(html.includes('<link rel="apple-touch-icon" href="/apple-touch-icon.png">'), r);
     const manifest = r.startsWith("/gosfc/") ? "/gosfc/site.webmanifest" : "/site.webmanifest";
     assert.ok(html.includes(`<link rel="manifest" href="${manifest}">`), r);
@@ -96,14 +97,14 @@ test("every page has the favicon, touch icon and manifest", () => {
     assert.equal(manifest.start_url, start, file);
     for (const icon of manifest.icons) assert.ok(existsSync(new URL(icon.src.slice(1), dist)), icon.src);
   }
-  for (const f of ["favicon.ico", "apple-touch-icon.png"]) assert.ok(existsSync(new URL(f, dist)), f);
+  for (const f of ["favicon.ico", "favicon.svg", "apple-touch-icon.png"]) assert.ok(existsSync(new URL(f, dist)), f);
 });
 
 test("the navbar logo is the goesm icon and every stylesheet image exists", () => {
   // The stylesheet is inlined into each page.
   for (const r of ["/", "/gosfc/ja/"]) {
     const css = [...page(r).matchAll(/<style>([\s\S]*?)<\/style>/g)].map((m) => m[1]).join("\n");
-    assert.match(css, /url\("?\/brand-mark\.png"?\)/, r);
+    assert.match(css, /url\("?\/favicon\.svg"?\)/, r);
     for (const [, u] of css.matchAll(/url\("?(\/[^")]+)"?\)/g)) assert.ok(existsSync(new URL(u.slice(1), dist)), `${r}: ${u}`);
   }
 });

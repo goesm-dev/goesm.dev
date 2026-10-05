@@ -170,10 +170,9 @@ button {
 }
 
 .brand-mark {
-  width: 26px;
-  height: 26px;
-  border-radius: 7px;
-  background: #000 url("/brand-mark.png") center / cover;
+  width: 30px;
+  height: 30px;
+  background: url("/favicon.svg") center / contain no-repeat;
 }
 
 .navbar-search {

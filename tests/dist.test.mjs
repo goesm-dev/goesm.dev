@@ -41,7 +41,7 @@ test("the gosfc site is its own site", () => {
   assert.ok(routes.filter((r) => r.startsWith("/gosfc/")).length >= 16, "gosfc pages missing from the sitemap");
   const html = page("/gosfc/guide/go-block/");
   assert.match(html, /<title>Writing the Go block \| gosfc<\/title>/);
-  assert.match(html, /<span class="brand-name">gosfc<\/span>/);
+  assert.match(html, /<span class="brand-name" translate="no">gosfc<\/span>/);
   assert.match(html, /href="https:\/\/github\.com\/goesm-dev\/gosfc"/);
   assert.match(page("/guide/"), /<a href="\/gosfc\/"[^>]*>gosfc</);
   // The navbar's GitHub icon is the tool's repository; the footer links the site's own.

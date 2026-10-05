@@ -41,7 +41,7 @@ const footer = (ui.footer as string).split(/\b(goesm|gosfc)\b/);
     <meta property="og:image" content="https://goesm.dev/goesm.png" />
     <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="manifest" href={head.site === "gosfc" ? "/gosfc/site.webmanifest" : "/site.webmanifest"} />
     <link rel="sitemap" href="/sitemap.xml" />
     {head.markdown && <link rel="alternate" type="text/markdown" href={head.markdown} />}
     <script is:inline>

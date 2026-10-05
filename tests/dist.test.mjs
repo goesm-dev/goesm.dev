@@ -86,10 +86,16 @@ test("every page has the favicon, touch icon and manifest", () => {
     const html = page(r);
     assert.ok(html.includes('<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">'), r);
     assert.ok(html.includes('<link rel="apple-touch-icon" href="/apple-touch-icon.png">'), r);
-    assert.ok(html.includes('<link rel="manifest" href="/site.webmanifest">'), r);
+    const manifest = r.startsWith("/gosfc/") ? "/gosfc/site.webmanifest" : "/site.webmanifest";
+    assert.ok(html.includes(`<link rel="manifest" href="${manifest}">`), r);
   }
-  const manifest = JSON.parse(read("site.webmanifest"));
-  for (const icon of manifest.icons) assert.ok(existsSync(new URL(icon.src.slice(1), dist)), icon.src);
+  // Each site installs as itself: gosfc starts at /gosfc/.
+  for (const [file, name, start] of [["site.webmanifest", "goesm", "/"], ["gosfc/site.webmanifest", "gosfc", "/gosfc/"]]) {
+    const manifest = JSON.parse(read(file));
+    assert.equal(manifest.name, name, file);
+    assert.equal(manifest.start_url, start, file);
+    for (const icon of manifest.icons) assert.ok(existsSync(new URL(icon.src.slice(1), dist)), icon.src);
+  }
   for (const f of ["favicon.ico", "apple-touch-icon.png"]) assert.ok(existsSync(new URL(f, dist)), f);
 });
 

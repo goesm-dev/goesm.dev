@@ -89,7 +89,7 @@ if errors.As(err, &jerr) {
 
 ## 性能
 
-引数が数値か ASCII の文字列か、それらをフィールドに持つ構造体であれば、`//goesm:import` 経由の呼び出しは JavaScript から同じ関数を呼ぶ場合より数ナノ秒多くかかるだけです。同じ呼び出しを `syscall/js` で書くと、数値と文字列では 20〜50 ns 多くかかり、スライスと構造体では 8〜50 倍の時間がかかります。`syscall/js` のコードは、スライスと構造体を要素やプロパティごとに組み立てるためです。`syscall/js` の性能は [dom.ja.md](/ja/reference/dom/#性能) でも説明しています。計測は [bench/jsimport](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.3/bench/jsimport) で行いました。
+引数が数値か ASCII の文字列か、それらをフィールドに持つ構造体であれば、`//goesm:import` 経由の呼び出しは JavaScript から同じ関数を呼ぶ場合より数ナノ秒多くかかるだけです。同じ呼び出しを `syscall/js` で書くと、数値と文字列では 20〜50 ns 多くかかり、スライスと構造体では 8〜50 倍の時間がかかります。`syscall/js` のコードは、スライスと構造体を要素やプロパティごとに組み立てるためです。`syscall/js` の性能は [dom.ja.md](/ja/reference/dom/#性能) でも説明しています。計測は [bench/jsimport](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.4/bench/jsimport) で行いました。
 
 | 呼び出し | JS → JS | Go → JS、`//goesm:import` | Go → JS、`syscall/js` |
 | --- | ---: | ---: | ---: |

@@ -56,7 +56,7 @@ goesm keeps the TypeScript module of every package it lowers in a cache, `goesm/
 - Several results come back as an array. A final `error` result is thrown as a `GoError`, which is the Go error again when it is passed back to Go.
 - A function that may block (channel operations, `time.Sleep`, waiting on a mutex) is an `async function` and returns a Promise; the others are synchronous.
 
-[docs/js-exports.md](/reference/js-exports/) has the details. [examples/](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.3/examples) has runnable examples (the cart, standard library use, goroutines) with the JavaScript that calls them.
+[docs/js-exports.md](/reference/js-exports/) has the details. [examples/](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.4/examples) has runnable examples (the cart, standard library use, goroutines) with the JavaScript that calls them.
 
 ### Calling JavaScript from Go
 

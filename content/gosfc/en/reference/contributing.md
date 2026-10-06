@@ -87,4 +87,4 @@ pnpm dev
 
 ## License
 
-gosfc is released under the [MIT License](https://github.com/goesm-dev/gosfc/tree/4f0689be9e96e6d62a37f0dd7d2245e5aaf69ecf/LICENSE). Contributions are treated as provided under the same MIT License. Because they are also bundled in the npm packages, `packages/vite/LICENSE` and `packages/astro/LICENSE` are copies of the root `LICENSE`.
+gosfc is released under the [MIT License](https://github.com/goesm-dev/gosfc/tree/a2bb163992154f4511b6988e2cbae4a372512717/LICENSE). Contributions are treated as provided under the same MIT License. Because they are also bundled in the npm packages, `packages/vite/LICENSE` and `packages/astro/LICENSE` are copies of the root `LICENSE`.

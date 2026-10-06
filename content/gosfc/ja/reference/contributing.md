@@ -87,4 +87,4 @@ pnpm dev
 
 ## ライセンス
 
-gosfc は [MIT License](https://github.com/goesm-dev/gosfc/tree/4f0689be9e96e6d62a37f0dd7d2245e5aaf69ecf/LICENSE) で公開されています。コントリビューションは同じ MIT License の下で提供されたものとして扱います。npm パッケージにも同梱するため、`packages/vite/LICENSE` と `packages/astro/LICENSE` はルートの `LICENSE` の写しにしています。
+gosfc は [MIT License](https://github.com/goesm-dev/gosfc/tree/a2bb163992154f4511b6988e2cbae4a372512717/LICENSE) で公開されています。コントリビューションは同じ MIT License の下で提供されたものとして扱います。npm パッケージにも同梱するため、`packages/vite/LICENSE` と `packages/astro/LICENSE` はルートの `LICENSE` の写しにしています。

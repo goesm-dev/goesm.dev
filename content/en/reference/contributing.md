@@ -92,4 +92,4 @@ See [docs/conformance.md](/reference/conformance/) for the variables, the baseli
 
 ## License
 
-goesm is released under the [BSD 3-Clause License](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.3/LICENSE). By contributing, you agree that your contributions are licensed under it.
+goesm is released under the [BSD 3-Clause License](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.4/LICENSE). By contributing, you agree that your contributions are licensed under it.

@@ -1,6 +1,6 @@
 ---
 source: goesm:CHANGELOG.ja.md
-ref: 65fa6ac4fb8b350ddd82b296fdc02f8d3c0c87af
+ref: 2429da55a269d3cafd463318441a9c8b6d47864d
 ---
 
 <!-- Synced by cmd/syncdocs. Edit the source instead. -->
@@ -12,7 +12,11 @@ goesm の各バージョンの変更点を、新しい順に記載します。�
 
 ## Unreleased
 
-v0.0.1-beta.3 以降に `main` に入った変更です。差分は [v0.0.1-beta.3...main](https://github.com/goesm-dev/goesm/compare/v0.0.1-beta.3...main) で確認できます。
+v0.0.1-beta.4 以降に `main` に入った変更です。差分は [v0.0.1-beta.4...main](https://github.com/goesm-dev/goesm/compare/v0.0.1-beta.4...main) で確認できます。
+
+## v0.0.1-beta.4
+
+2026-10-06 にタグを付けました。v0.0.1-beta.3 からの差分は [v0.0.1-beta.3...v0.0.1-beta.4](https://github.com/goesm-dev/goesm/compare/v0.0.1-beta.3...v0.0.1-beta.4) で確認できます。
 
 生成コードの速度とバンドルサイズを、手書きの JavaScript にさらに近づける変更です。Go のコードの書き方も、それを呼ぶ JavaScript の書き方も変わりません。
 
@@ -28,6 +32,7 @@ v0.0.1-beta.3 以降に `main` に入った変更です。差分は [v0.0.1-beta
 
 ### バンドルサイズ
 
+- `json.Unmarshal` の呼び出しがすべて runtime だけで decode できる型 (method がなく、tag が単純で、配列も、すでに pointer を持ちうる interface もない型) への decode であるパッケージは、encoding/json を import しなくなりました。runtime が入力を検査し、Go と同じ merge の規則で decode し、encoding/json 自身のエラーを返します。struct の slice に JSON を decode するだけのプログラムは、minify 後 553 KB から 36 KB (gzip で 152 KB から 12.6 KB) に、Node.js での起動時間は 57 ms から 7 ms になりました。[#98](https://github.com/goesm-dev/goesm/pull/98)
 - regexp のパターンがすべてコンパイル時に分かるプログラムでは、変換後のパターンが同じマッチを線形時間で見つけられる場合に、エンジンの RegExp でマッチします。このとき regexp のパーサーとエンジンはバンドルに入りません。`strconv.Atoi`、`strings.TrimSpace`、`strings.Split` は、unicode のテーブルや NumError のメソッドを引き込まなくなりました。日付を解析するカレンダーのパッケージでは、strings と strconv による増分が gzip で 10.2 KB から 1.9 KB に、regexp による増分が 55.6 KB から 4.5 KB に減りました。[#85](https://github.com/goesm-dev/goesm/pull/85)
 - メソッドテーブルは、Go のリンカーと同じく、到達可能なコードがインターフェース経由で呼ぶメソッドだけを残します。unicode のカテゴリーとスクリプトのテーブルは、それを使いうる regexp パターンがなければ取り除かれます。Markdown のバンドルは gzip で 215 KiB から 163 KiB になりました。[#82](https://github.com/goesm-dev/goesm/pull/82)
 - 副作用がないとみなすパッケージ変数の初期化式が増えました。空の init 関数は出力せず、strconv の 128 ビットの 10 のべき乗は必要なときに計算します。neverthrow との比較で使う標準ライブラリ版のバンドルは、gzip で 101 KiB から 52 KiB になりました。[#81](https://github.com/goesm-dev/goesm/pull/81)
@@ -35,6 +40,7 @@ v0.0.1-beta.3 以降に `main` に入った変更です。差分は [v0.0.1-beta
 
 ### 修正
 
+- 符号なし整数への `-0` の `json.Unmarshal` は、0 を格納せず Go と同じエラーを返すようになりました。[#98](https://github.com/goesm-dev/goesm/pull/98)
 - 名前が ASCII 以外の大文字で始まる構造体フィールドは、export されるようになりました。ASCII 以外の文字で始まる非公開のフィールドは、export されなくなりました。[#81](https://github.com/goesm-dev/goesm/pull/81)
 
 ### 比較スイートと CI

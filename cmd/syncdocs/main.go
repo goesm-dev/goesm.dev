@@ -96,10 +96,10 @@ func main() {
 				"docs/use-cases.md":           "/reference/use-cases/",
 				"CHANGELOG.md":                "/reference/changelog/",
 			},
-			// The release notes of v0.0.1-beta.0 to beta.3 were written
-			// after beta.3 (goesm #91, #92).
+			// v0.0.1-beta.4 was tagged with its release notes still under
+			// Unreleased; goesm #99 named the section after the tag.
 			later: map[string]string{
-				"CHANGELOG.md": "65fa6ac4fb8b350ddd82b296fdc02f8d3c0c87af",
+				"CHANGELOG.md": "2429da55a269d3cafd463318441a9c8b6d47864d",
 			},
 			sections: map[string]string{
 				"intro":        "/guide/",

@@ -130,4 +130,4 @@ export default { fetch: Handler() };
 
 ## 性能
 
-数値はそのまま渡すので、呼び出しのコストは JavaScript の関数の呼び出しと同じです。文字列は、渡すときに UTF-16 から UTF-8 に、受け取るときに UTF-8 から UTF-16 に変換します。ASCII の文字列は、走査したうえでそのまま渡します。スライス、マップ、構造体は要素ごとにコピーします。この費用は [bench](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.3/bench) の呼び出し系カーネルで測っています。`Add`、`Upper`、`Handle` は、数値や文字列を渡して Go を 10 万回または 1 万回呼び出します。
+数値はそのまま渡すので、呼び出しのコストは JavaScript の関数の呼び出しと同じです。文字列は、渡すときに UTF-16 から UTF-8 に、受け取るときに UTF-8 から UTF-16 に変換します。ASCII の文字列は、走査したうえでそのまま渡します。スライス、マップ、構造体は要素ごとにコピーします。この費用は [bench](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.4/bench) の呼び出し系カーネルで測っています。`Add`、`Upper`、`Handle` は、数値や文字列を渡して Go を 10 万回または 1 万回呼び出します。

@@ -4,8 +4,8 @@ package site
 
 // Revisions and module versions of the synced documentation.
 const (
-	goesmRef     = "v0.0.1-beta.3"
-	goesmVersion = "v0.0.1-beta.3" // github.com/goesm-dev/goesm
-	gosfcRef     = "4f0689be9e96e6d62a37f0dd7d2245e5aaf69ecf"
-	gosfcVersion = "v0.0.0-20261005171715-4f0689be9e96" // github.com/goesm-dev/gosfc
+	goesmRef     = "v0.0.1-beta.4"
+	goesmVersion = "v0.0.1-beta.4" // github.com/goesm-dev/goesm
+	gosfcRef     = "a2bb163992154f4511b6988e2cbae4a372512717"
+	gosfcVersion = "v0.0.0-20261006093010-a2bb16399215" // github.com/goesm-dev/gosfc
 )

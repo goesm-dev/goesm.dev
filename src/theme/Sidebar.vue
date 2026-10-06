@@ -9,8 +9,8 @@
       <a v-for="s in bar.social" :key="s.link" :href="s.link" target="_blank" rel="noreferrer">GitHub<svg class="external" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path fill="currentColor" d="M9 5v2h6.59L4 18.59 5.41 20 17 8.41V15h2V5z" /></svg></a>
       <p class="sidebar-title">{{ bar.version.heading }}</p>
       <p class="sidebar-version">{{ bar.version.title }}</p>
-      <a v-for="l in bar.version.links" :key="l.link" :href="l.link" target="_blank" rel="noreferrer"
-        >{{ l.text }}<svg class="external" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path fill="currentColor" d="M9 5v2h6.59L4 18.59 5.41 20 17 8.41V15h2V5z" /></svg
+      <a v-for="l in bar.version.links" :key="l.link" :href="l.link" :target="l.external ? '_blank' : undefined" :rel="l.external ? 'noreferrer' : undefined"
+        >{{ l.text }}<svg v-if="l.external" class="external" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path fill="currentColor" d="M9 5v2h6.59L4 18.59 5.41 20 17 8.41V15h2V5z" /></svg
       ></a>
       <p class="sidebar-title">{{ bar.ui.language }}</p>
       <a v-for="a in bar.locales" :key="a.lang" :href="a.link" :lang="a.lang" :hreflang="a.lang" :class="{ active: a.current }">{{ a.label }}</a>

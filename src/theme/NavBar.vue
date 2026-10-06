@@ -28,8 +28,8 @@
         <ul>
           <li class="menu-caption">{{ bar.version.title }}</li>
           <li v-for="l in bar.version.links" :key="l.link">
-            <a :href="l.link" target="_blank" rel="noreferrer"
-              >{{ l.text }}<svg class="external" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path fill="currentColor" d="M9 5v2h6.59L4 18.59 5.41 20 17 8.41V15h2V5z" /></svg
+            <a :href="l.link" :target="l.external ? '_blank' : undefined" :rel="l.external ? 'noreferrer' : undefined"
+              >{{ l.text }}<svg v-if="l.external" class="external" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path fill="currentColor" d="M9 5v2h6.59L4 18.59 5.41 20 17 8.41V15h2V5z" /></svg
             ></a>
           </li>
         </ul>

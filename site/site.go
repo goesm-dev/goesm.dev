@@ -178,7 +178,7 @@ func NavBar(r string) Bar {
 		Nav:     s.Nav(r),
 		Locales: s.Alternates(r),
 		Social:  s.Config.Social,
-		Version: versionOf(s, loc.Code),
+		Version: versionOf(s, loc),
 		UI:      loc.UI,
 	}
 }

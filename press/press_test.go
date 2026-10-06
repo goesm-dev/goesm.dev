@@ -50,7 +50,7 @@ Write ` + "`<!--@include: ./missing.md-->`" + ` on a line of its own.
 		"en/reference/arch.md": {Data: []byte("---\nsource: goesm:ARCHITECTURE.md\n---\n# Architecture\n\nSee [conformance](docs/conformance.md), [testdata](testdata/x.go) and ![logo](docs/assets/goesm.png).\n\n## Value representation\n\n## 11. 実装済み / 未実装\n")},
 		"en/reference/conf.md": {Data: []byte("---\nsource: goesm:docs/conformance.md\n---\n# Conformance\n\nBack to [the design](../ARCHITECTURE.md#value-representation).\n")},
 		"ja/guide/start.md":    {Data: []byte("# はじめに\n\n## インストール\n\ngoesm を\nインストールします。\n")},
-		"ja/reference/conf.md": {Data: []byte("---\nsource: goesm:docs/conformance.ja.md\n---\n# 適合性\n\n[設計](../ARCHITECTURE.ja.md)\n")},
+		"ja/reference/conf.md": {Data: []byte("---\nsource: goesm:docs/conformance.ja.md\nref: 65fa6ac\n---\n# 適合性\n\n[設計](../ARCHITECTURE.ja.md)\n")},
 	}
 	ui := UI{Containers: map[string]string{"note": "Note", "tip": "Tip"}}
 	cfg := &Config{
@@ -159,10 +159,14 @@ func TestSyncedLinks(t *testing.T) {
 		t.Errorf("link back to the design: %s", html)
 	}
 	// The ja page links to the ja translation, which is missing here: the
-	// link falls back to GitHub.
+	// link falls back to GitHub, at the revision the page was synced from
+	// (ref:).
 	html, _ = s.Render(s.Page("/ja/reference/conf/"))
-	if !strings.Contains(html, `href="https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.0/ARCHITECTURE.ja.md"`) {
+	if !strings.Contains(html, `href="https://github.com/goesm-dev/goesm/blob/65fa6ac/ARCHITECTURE.ja.md"`) {
 		t.Errorf("ja link: %s", html)
+	}
+	if link, _ := s.EditLink(s.Page("/ja/reference/conf/")); link != "https://github.com/goesm-dev/goesm/blob/65fa6ac/docs/conformance.ja.md" {
+		t.Errorf("edit link with ref: %s", link)
 	}
 	link, synced := s.EditLink(s.Page("/reference/arch/"))
 	if !synced || link != "https://github.com/goesm-dev/goesm/blob/v0.0.1-beta.0/ARCHITECTURE.md" {

@@ -22,9 +22,9 @@ type Version struct {
 }
 
 // versionOf describes the version the docs of site s describe, in the
-// language of locale code.
-func versionOf(s *press.Site, code string) Version {
-	ja := code == "ja"
+// language of locale loc.
+func versionOf(s *press.Site, loc *press.Locale) Version {
+	ja := loc.Code == "ja"
 	pick := func(en, jaText string) string {
 		if ja {
 			return jaText
@@ -51,8 +51,19 @@ func versionOf(s *press.Site, code string) Version {
 		}
 		return v
 	}
+	// The release notes are the version's section of the changelog page,
+	// in the reader's language, or else the GitHub release.
+	notes := press.NavLink{Text: pick("Release notes", "リリースノート"), Link: repo + "/releases/tag/" + version, External: true}
+	if route := s.Home(loc) + "reference/changelog/"; s.Page(route) != nil {
+		_, headings := s.Render(s.Page(route))
+		for _, h := range headings {
+			if h.Level == 2 && h.Text == version {
+				notes = press.NavLink{Text: notes.Text, Link: route + "#" + h.ID}
+			}
+		}
+	}
 	v.Links = []press.NavLink{
-		{Text: pick("Release notes", "リリースノート"), Link: repo + "/releases/tag/" + version, External: true},
+		notes,
 		pkg,
 		{Text: pick("All releases", "すべてのリリース"), Link: repo + "/releases", External: true},
 	}

@@ -28,6 +28,7 @@ var guideSidebar = func(guide, intro, start, vue, status, perf, this, ref string
 			{Link: "/reference/benchmark"},
 			{Link: "/reference/compare"},
 			{Link: "/reference/contributing"},
+			{Link: "/reference/changelog"},
 			{Link: "/reference/releasing"},
 		}},
 	}

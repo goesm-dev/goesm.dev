@@ -144,7 +144,7 @@ func TestVersion(t *testing.T) {
 	if v := NavBar("/ja/guide/").Version; v.Label != goesmVersion || v.Links[0].Link != "https://github.com/goesm-dev/goesm/releases/tag/"+goesmVersion || v.Heading != "バージョン" {
 		t.Errorf("goesm version %+v", v)
 	}
-	if v := NavBar("/gosfc/guide/").Version; !strings.HasPrefix(gosfcRef, v.Label) || len(v.Label) != 7 || v.Links[0].Link != "https://github.com/goesm-dev/gosfc/commit/"+gosfcRef {
+	if v := NavBar("/gosfc/guide/").Version; v.Label != gosfcVersion || v.Links[1].Link != "https://pkg.go.dev/github.com/goesm-dev/gosfc@"+gosfcVersion {
 		t.Errorf("gosfc version %+v", v)
 	}
 	for v, want := range map[string]string{

@@ -323,6 +323,7 @@ button {
 
 .sidebar-version {
   margin: 0 0 4px;
+  overflow-wrap: anywhere;
   color: var(--c-text-3);
   font-size: 13px;
 }
@@ -1263,7 +1264,7 @@ a.feature:hover {
   }
 
   .search-button {
-    min-width: 160px;
+    min-width: 116px;
   }
 }
 

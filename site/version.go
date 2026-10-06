@@ -10,8 +10,9 @@ import (
 // of a site describe: the version go.mod selects, which cmd/syncdocs
 // synced the docs from.
 type Version struct {
-	// Label is the version as the navigation bar shows it ("v0.0.1-beta.3",
-	// or the short commit of a pseudo-version, "4f0689b").
+	// Label is the version as the navigation bar shows it: the module
+	// version, as pkg.go.dev shows it, prereleases and pseudo-versions
+	// included ("v0.0.1-beta.3", "v0.0.0-20261005171715-4f0689be9e96").
 	Label string `json:"label"`
 	// Title says what Label is ("Docs for goesm v0.0.1-beta.3").
 	Title string `json:"title"`
@@ -35,27 +36,27 @@ func versionOf(s *press.Site, code string) Version {
 	if s == gosfcSite {
 		name, repo, version, rev = "gosfc", "https://github.com/goesm-dev/gosfc", gosfcVersion, gosfcRef
 	}
-	if label, date := pseudo(version); date != "" {
-		// No release yet (gosfc): go.mod selects a commit.
-		return Version{
-			Label:   label,
-			Title:   pick("Docs for "+name+" at commit "+label+" ("+date+")", name+" のコミット "+label+"（"+date+"）のドキュメント"),
-			Heading: heading,
-			Links: []press.NavLink{
-				{Text: pick("Commit "+label+" ("+date+")", "コミット "+label+"（"+date+"）"), Link: repo + "/commit/" + rev, External: true},
-				{Text: pick("Commit history", "コミット履歴"), Link: repo + "/commits/main", External: true},
-			},
-		}
-	}
-	return Version{
+	pkg := press.NavLink{Text: "pkg.go.dev", Link: "https://pkg.go.dev/" + strings.TrimPrefix(repo, "https://") + "@" + version, External: true}
+	v := Version{
 		Label:   version,
 		Title:   pick("Docs for "+name+" "+version, name+" "+version+" のドキュメント"),
 		Heading: heading,
-		Links: []press.NavLink{
-			{Text: pick("Release notes", "リリースノート"), Link: repo + "/releases/tag/" + version, External: true},
-			{Text: pick("All releases", "すべてのリリース"), Link: repo + "/releases", External: true},
-		},
 	}
+	if commit, date := pseudo(version); date != "" {
+		// No release yet (gosfc): go.mod selects a commit.
+		v.Links = []press.NavLink{
+			{Text: pick("Commit "+commit+" ("+date+")", "コミット "+commit+"（"+date+"）"), Link: repo + "/commit/" + rev, External: true},
+			pkg,
+			{Text: pick("Commit history", "コミット履歴"), Link: repo + "/commits/main", External: true},
+		}
+		return v
+	}
+	v.Links = []press.NavLink{
+		{Text: pick("Release notes", "リリースノート"), Link: repo + "/releases/tag/" + version, External: true},
+		pkg,
+		{Text: pick("All releases", "すべてのリリース"), Link: repo + "/releases", External: true},
+	}
+	return v
 }
 
 // pseudo returns the short commit and the date (YYYY-MM-DD, UTC) of a

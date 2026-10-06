@@ -1,7 +1,8 @@
 //go:build js
 
 // Package enhance adds the page behaviour that needs the browser: copy
-// buttons on code blocks and the active entry of the page outline.
+// buttons on code blocks, the active entry of the page outline, and closing
+// the navigation bar's menus on a click elsewhere.
 package enhance
 
 import "syscall/js"
@@ -20,6 +21,7 @@ func Install(copied string) {
 	if !installed {
 		installed = true
 		doc.Call("addEventListener", "click", js.FuncOf(func(this js.Value, args []js.Value) any {
+			closeMenus(args[0].Get("target"))
 			btn := args[0].Get("target").Call("closest", ".vp-code .copy")
 			if !btn.Truthy() {
 				return nil
@@ -44,6 +46,18 @@ func Install(copied string) {
 	}
 	copiedLabel = copied
 	trackOutline(doc)
+}
+
+// closeMenus closes the open menus of the navigation bar (<details
+// class="nav-menu">) other than the one holding target, the element
+// clicked.
+func closeMenus(target js.Value) {
+	menus := js.Global().Get("document").Call("querySelectorAll", ".nav-menu[open]")
+	for i := menus.Get("length").Int() - 1; i >= 0; i-- {
+		if m := menus.Call("item", i); !m.Call("contains", target).Bool() {
+			m.Call("removeAttribute", "open")
+		}
+	}
 }
 
 // copiedLabel is the copy button's label once it has copied, in the page's

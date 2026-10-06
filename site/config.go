@@ -45,7 +45,6 @@ var en = &press.Locale{
 		{Text: "Reference", Link: "/reference/architecture", Match: "/reference/"},
 		{Text: "Performance", Link: "/guide/performance"},
 		{Text: "gosfc", Link: "/gosfc/", Root: true},
-		{Text: "Releases", Link: "https://github.com/goesm-dev/goesm/releases"},
 	},
 	UI: press.UI{
 		OnThisPage:    "On this page",
@@ -88,7 +87,6 @@ var ja = &press.Locale{
 		{Text: "リファレンス", Link: "/reference/architecture", Match: "/reference/"},
 		{Text: "性能", Link: "/guide/performance"},
 		{Text: "gosfc", Link: "/gosfc/ja/", Root: true},
-		{Text: "リリース", Link: "https://github.com/goesm-dev/goesm/releases"},
 	},
 	UI: press.UI{
 		OnThisPage:    "このページの内容",

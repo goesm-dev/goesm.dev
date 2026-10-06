@@ -164,7 +164,9 @@ type Bar struct {
 	Nav     []press.NavLink   `json:"nav"`
 	Locales []press.Alternate `json:"locales"`
 	Social  []press.Social    `json:"social"`
-	UI      press.UI          `json:"ui"`
+	// Version is the version of goesm (or gosfc) the docs describe.
+	Version Version  `json:"version"`
+	UI      press.UI `json:"ui"`
 }
 
 func NavBar(r string) Bar {
@@ -176,6 +178,7 @@ func NavBar(r string) Bar {
 		Nav:     s.Nav(r),
 		Locales: s.Alternates(r),
 		Social:  s.Config.Social,
+		Version: versionOf(s, loc.Code),
 		UI:      loc.UI,
 	}
 }

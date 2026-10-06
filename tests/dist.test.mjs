@@ -51,6 +51,19 @@ test("the gosfc site is its own site", () => {
   assert.match(page("/gosfc/ja/"), /<a href="https:\/\/github\.com\/goesm-dev\/goesm\.dev">このサイトのソース<\/a>/);
 });
 
+test("the nav bar says which version the docs describe", () => {
+  const version = /<details class="nav-menu version-menu"><summary title="([^"]+)"[^>]*><span translate="no">([^<]+)<\/span>/;
+  const goesm = page("/guide/").match(version);
+  assert.ok(goesm, "no version menu on /guide/");
+  assert.match(goesm[2], /^v\d+\.\d+\.\d+/);
+  assert.equal(goesm[1], `Docs for goesm ${goesm[2]}`);
+  assert.ok(page("/ja/guide/").includes(`goesm ${goesm[2]} のドキュメント`));
+  assert.ok(page("/guide/").includes(`href="https://github.com/goesm-dev/goesm/releases/tag/${goesm[2]}"`));
+  const gosfc = page("/gosfc/guide/").match(version);
+  assert.ok(gosfc, "no version menu on /gosfc/guide/");
+  assert.ok(page("/gosfc/guide/").includes(`href="https://github.com/goesm-dev/gosfc/`), gosfc[1]);
+});
+
 test("each locale has a 404.html where Cloudflare looks for it", () => {
   assert.match(read("404.html"), /<html lang="en"/);
   assert.match(read("ja/404.html"), /<html lang="ja"/);

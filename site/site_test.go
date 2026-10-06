@@ -1,7 +1,6 @@
 package site
 
 import (
-	"encoding/json"
 	"net/url"
 	"os"
 	"regexp"
@@ -14,10 +13,7 @@ var internalLink = regexp.MustCompile(`(?:href|src|srcset)="(/[^"#]*)(#[^"]*)?"`
 // Every page renders, and every link to the site itself points at a page, a
 // heading of that page or a file in public/.
 func TestLinks(t *testing.T) {
-	var routes []route
-	if err := json.Unmarshal([]byte(RoutesJSON()), &routes); err != nil {
-		t.Fatal(err)
-	}
+	routes := Routes()
 	if len(routes) < 20 {
 		t.Fatalf("only %d routes", len(routes))
 	}
@@ -65,24 +61,21 @@ func TestLinks(t *testing.T) {
 }
 
 func TestHead(t *testing.T) {
-	var h Head
-	json.Unmarshal([]byte(HeadJSON("/ja/guide/")), &h)
+	h := PageHead("/ja/guide/")
 	if !h.Found || h.Lang != "ja" || h.Title != "goesm とは | goesm" || len(h.Alternates) != 2 || h.Search != "/search/ja.txt" {
 		t.Errorf("%+v", h)
 	}
-	json.Unmarshal([]byte(HeadJSON("/nope/")), &h)
+	h = PageHead("/nope/")
 	if h.Found {
 		t.Error("found /nope/")
 	}
-	h = Head{}
-	json.Unmarshal([]byte(HeadJSON("/gosfc/ja/guide/")), &h)
+	h = PageHead("/gosfc/ja/guide/")
 	if !h.Found || h.Site != "gosfc" || h.Title != "gosfc とは | gosfc" || h.Search != "/gosfc/search/ja.txt" || h.Home != "/gosfc/ja/" ||
 		len(h.Alternates) != 2 || h.Alternates[0].Href != "https://goesm.dev/gosfc/guide/" {
 		t.Errorf("%+v", h)
 	}
-	h = Head{}
-	json.Unmarshal([]byte(HeadJSON("/gosfc/ja/nope/")), &h)
-	if h.Found || h.Lang != "ja" || h.Home != "/gosfc/ja/" {
+	h = PageHead("/gosfc/ja/nope/")
+	if h.Found || h.Lang != "ja" || h.Home != "/gosfc/ja/" || h.Manifest != "/gosfc/site.webmanifest" {
 		t.Errorf("gosfc 404: %+v", h)
 	}
 }
@@ -111,10 +104,7 @@ func TestSites(t *testing.T) {
 }
 
 func TestLLMs(t *testing.T) {
-	var paths []string
-	if err := json.Unmarshal([]byte(LLMsPathsJSON()), &paths); err != nil {
-		t.Fatal(err)
-	}
+	paths := LLMsPaths()
 	if got := strings.Join(paths, " "); got != "gosfc/llms gosfc/llms-full gosfc/ja/llms gosfc/ja/llms-full llms llms-full ja/llms ja/llms-full" {
 		t.Errorf("llms paths: %s", got)
 	}
@@ -129,13 +119,22 @@ func TestLLMs(t *testing.T) {
 			t.Errorf("/gosfc/ja/llms.txt has no %q", want)
 		}
 	}
-	var pages []struct{ Slug, Route string }
-	if err := json.Unmarshal([]byte(MarkdownPagesJSON()), &pages); err != nil {
-		t.Fatal(err)
-	}
-	for _, p := range pages {
+	for _, p := range MarkdownPages() {
 		if md := PageMarkdown(p.Route); !strings.HasPrefix(md, "# ") {
 			t.Errorf("%s: %.80q", p.Route, md)
+		}
+	}
+}
+
+func TestSplitNames(t *testing.T) {
+	for text, want := range map[string]string{
+		"Built with goesm, gosfc and Astro.": "Built with |goesm|, |gosfc| and Astro.",
+		"このサイトは goesm、gosfc で作られています。":       "このサイトは |goesm|、|gosfc| で作られています。",
+		"goesmx and xgosfc, goesm":           "goesmx and xgosfc, |goesm|",
+		"no names":                           "no names",
+	} {
+		if got := strings.Join(splitNames(text), "|"); got != want {
+			t.Errorf("splitNames(%q) = %q, want %q", text, got, want)
 		}
 	}
 }

@@ -43,19 +43,40 @@ press は普通の Go なので、`go test` でネイティブにテストしま
 
 ## Astro と Vue
 
-Astro のページは Go を直接呼びます。`src/pages/[...slug].astro` はページの一覧を
-エンジンに尋ねます。
+Astro のファイルも Go で書いています。ページの外枠である `src/theme/Layout.astro` は、
+gosfc の `---go` による Go のフロントマターを持ちます。そこでテーマのコンポーネントを
+import し、`<head>` に必要な情報をエンジンから受け取ります。
 
 ```astro
----
-import { RoutesJSON, $runtime as rt } from "go:goesm.dev/site";
+---go
+import (
+	"goesm.dev/site"
 
-export function getStaticPaths() {
-  const routes = JSON.parse(rt.toJSString(RoutesJSON()));
-  return routes.map((r) => ({ params: { slug: r.slug || undefined }, props: { route: r.route } }));
+	DocPage "./DocPage.vue"
+	NavBar "./NavBar.vue"
+	_ "../styles/theme.css"
+)
+
+type Props struct {
+	Route string
 }
+
+route := props.Route
+head := site.PageHead(route)
+isDoc := head.Found && head.Layout == "doc"
 ---
+
+<html lang={head.lang}>
+  <head>
+    <title>{head.title}</title>
 ```
+
+次の部分は、それぞれの理由で TypeScript のままです。
+
+- `src/pages/[...slug].astro` は `getStaticPaths` でページを列挙します。これは export であり、Go のフロントマターからは export できません。このフロントマターも `go:` の import で Go を呼び、`Routes().map(...)` とするだけです。
+- Markdown 版、llms.txt、検索インデックス、サイトマップは Astro のエンドポイント（`.ts` ファイル）です。どれも Go の関数が書いた内容を返す数行のコードです。
+- 最初の描画の前にダークテーマを設定するスクリプトは、インラインの `<script>` です。`<script lang="go">` はバンドルされ、ページの解析後に実行されるため間に合いません。
+- `src/theme/ClientRouter.ts` は、Astro の `ClientRouter` をデフォルトエクスポートとして再エクスポートします。Go の import 構文はデフォルトエクスポートしか import できないためです。
 
 テーマは `<script setup>` が Go の Vue コンポーネントです。たとえばドキュメントの
 ページのコンポーネントは、エンジンを呼んで結果をテンプレートに渡します。

@@ -1,30 +1,31 @@
----
+---go
 // The page shell. Astro owns routing and <head>; everything inside <body> is
 // the Vue theme, whose components run Go (the site package) through gosfc.
 // Links between pages go through Astro's client router: the next page is
 // fetched and swapped in, and its islands start again.
-import { ClientRouter } from "astro:transitions";
-import { HeadJSON } from "go:goesm.dev/site";
-import NavBar from "./NavBar.vue";
-import Sidebar from "./Sidebar.vue";
-import DocPage from "./DocPage.vue";
-import HomePage from "./HomePage.vue";
-import ThemeToggle from "./ThemeToggle.vue";
-import Search from "./Search.vue";
-import Enhance from "./Enhance.vue";
-import LiveDemo from "./LiveDemo.vue";
-import "../styles/theme.css";
+import (
+	"goesm.dev/site"
 
-interface Props {
-  route: string;
+	ClientRouter "./ClientRouter.ts"
+	DocPage "./DocPage.vue"
+	Enhance "./Enhance.vue"
+	HomePage "./HomePage.vue"
+	LiveDemo "./LiveDemo.vue"
+	NavBar "./NavBar.vue"
+	Search "./Search.vue"
+	Sidebar "./Sidebar.vue"
+	ThemeToggle "./ThemeToggle.vue"
+	_ "../styles/theme.css"
+)
+
+type Props struct {
+	Route string
 }
-const { route } = Astro.props;
-const head = JSON.parse(HeadJSON(route));
-const ui = head.ui;
-const isDoc = head.found && head.layout === "doc";
-// goesm and gosfc are names: browser translation turned them into words
-// ("gomesm"), so the footer marks them translate="no".
-const footer = (ui.footer as string).split(/\b(goesm|gosfc)\b/);
+
+route := props.Route
+head := site.PageHead(route)
+ui := head.UI
+isDoc := head.Found && head.Layout == "doc"
 ---
 
 <!doctype html>
@@ -36,7 +37,7 @@ const footer = (ui.footer as string).split(/\b(goesm|gosfc)\b/);
     <meta name="description" content={head.description} />
     <meta name="theme-color" content="#0b0f1a" />
     {head.canonical && <link rel="canonical" href={head.canonical} />}
-    {head.alternates?.map((a: { lang: string; href: string }) => <link rel="alternate" hreflang={a.lang} href={a.href} />)}
+    {head.alternates?.map((a) => <link rel="alternate" hreflang={a.lang} href={a.href} />)}
     <meta property="og:title" content={head.title} />
     <meta property="og:description" content={head.description} />
     <meta property="og:type" content="website" />
@@ -45,7 +46,7 @@ const footer = (ui.footer as string).split(/\b(goesm|gosfc)\b/);
     <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="manifest" href={head.site === "gosfc" ? "/gosfc/site.webmanifest" : "/site.webmanifest"} />
+    <link rel="manifest" href={head.manifest} />
     <link rel="sitemap" href="/sitemap.xml" />
     {head.markdown && <link rel="alternate" type="text/markdown" href={head.markdown} />}
     <ClientRouter />
@@ -107,7 +108,7 @@ const footer = (ui.footer as string).split(/\b(goesm|gosfc)\b/);
       )
     }
     <footer class="site-footer">
-      <p>{footer.map((part, i) => (i % 2 ? <span translate="no">{part}</span> : part))}</p>
+      <p>{head.footer.map((part, i) => (i % 2 ? <span translate="no">{part}</span> : part))}</p>
       <p><a href={head.siteRepo}>{ui.siteSource}</a></p>
     </footer>
     <Enhance client:idle copied={ui.copied} />

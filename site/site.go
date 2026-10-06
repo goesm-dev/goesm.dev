@@ -9,7 +9,6 @@
 package site
 
 import (
-	"encoding/json"
 	"io/fs"
 	"strings"
 
@@ -56,16 +55,16 @@ type route struct {
 	Route string `json:"route"`
 }
 
-// RoutesJSON lists every page as {slug, route}, where slug is the route
-// without its slashes, for Astro's getStaticPaths.
-func RoutesJSON() string {
+// Routes lists every page as {slug, route}, where slug is the route without
+// its slashes, for Astro's getStaticPaths.
+func Routes() []route {
 	var out []route
 	for _, s := range sites {
 		for _, p := range s.Pages() {
 			out = append(out, route{Slug: strings.Trim(p.Route, "/"), Route: p.Route})
 		}
 	}
-	return mustJSON(out)
+	return out
 }
 
 // Head is what <head> needs.
@@ -88,6 +87,12 @@ type Head struct {
 	// SiteRepo is this site's own repository, linked from the footer; the
 	// navbar's GitHub icon points to goesm or gosfc.
 	SiteRepo string `json:"siteRepo"`
+	// Footer is the footer text, split so that the odd elements are the
+	// names goesm and gosfc: browser translation turned them into words
+	// ("gomesm"), so the footer marks them translate="no".
+	Footer []string `json:"footer"`
+	// Manifest is the web manifest of the site.
+	Manifest string `json:"manifest"`
 }
 
 const siteRepo = "https://github.com/goesm-dev/goesm.dev"
@@ -97,9 +102,9 @@ type altLink struct {
 	Href string `json:"href"`
 }
 
-// HeadJSON returns the Head of route as JSON. For a route without a page
-// (the 404 page), found is false and the rest describes the route's locale.
-func HeadJSON(r string) string {
+// PageHead returns the Head of route. For a route without a page (the 404
+// page), Found is false and the rest describes the route's locale.
+func PageHead(r string) Head {
 	s := siteOf(r)
 	loc := s.LocaleOf(r)
 	h := Head{
@@ -112,12 +117,14 @@ func HeadJSON(r string) string {
 		Home:     s.Home(loc),
 		Social:   s.Config.Social,
 		SiteRepo: siteRepo,
+		Footer:   splitNames(loc.UI.Footer),
+		Manifest: s.Config.Base + "/site.webmanifest",
 		Title:    loc.UI.NotFound + " | " + loc.Title,
 		Layout:   "page",
 	}
 	p := s.Page(r)
 	if p == nil {
-		return mustJSON(h)
+		return h
 	}
 	h.Found = true
 	h.Markdown = press.MarkdownPath(p.Route)
@@ -140,7 +147,49 @@ func HeadJSON(r string) string {
 			h.Alternates = append(h.Alternates, altLink{Lang: a.Lang, Href: s.Config.SiteURL + a.Link})
 		}
 	}
-	return mustJSON(h)
+	return h
+}
+
+// splitNames splits text around the words goesm and gosfc, which end up at
+// the odd indexes ("Built with ", "goesm", ".").
+func splitNames(text string) []string {
+	out := []string{""}
+	for text != "" {
+		i := len(text)
+		for _, name := range []string{"goesm", "gosfc"} {
+			if j := wordIndex(text, name); j >= 0 && j < i {
+				i = j
+			}
+		}
+		if i == len(text) {
+			break
+		}
+		out[len(out)-1] += text[:i]
+		out = append(out, text[i:i+5], "")
+		text = text[i+5:]
+	}
+	out[len(out)-1] += text
+	return out
+}
+
+// wordIndex is the index of the first occurrence of word in text that is a
+// whole word (not inside a longer word), or -1.
+func wordIndex(text, word string) int {
+	isWord := func(c byte) bool {
+		return c == '_' || '0' <= c && c <= '9' || 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z'
+	}
+	for off := 0; ; {
+		i := strings.Index(text[off:], word)
+		if i < 0 {
+			return -1
+		}
+		i += off
+		end := i + len(word)
+		if (i == 0 || !isWord(text[i-1])) && (end == len(text) || !isWord(text[end])) {
+			return i
+		}
+		off = i + 1
+	}
 }
 
 // SearchIndex returns the search index of a locale ("en", "ja") of the site
@@ -232,12 +281,4 @@ func Home(r string) HomeView {
 	}
 	html, _ := s.Render(p)
 	return HomeView{Hero: p.Hero, Features: p.Features, HTML: html}
-}
-
-func mustJSON(v any) string {
-	b, err := json.Marshal(v)
-	if err != nil {
-		panic(err)
-	}
-	return string(b)
 }

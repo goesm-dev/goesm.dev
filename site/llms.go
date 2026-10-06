@@ -14,9 +14,9 @@ type mdPage struct {
 	Route string `json:"route"`
 }
 
-// MarkdownPagesJSON lists the Markdown version of every page, for Astro's
+// MarkdownPages lists the Markdown version of every page, for Astro's
 // getStaticPaths.
-func MarkdownPagesJSON() string {
+func MarkdownPages() []mdPage {
 	var out []mdPage
 	for _, s := range sites {
 		for _, p := range s.Pages() {
@@ -24,7 +24,7 @@ func MarkdownPagesJSON() string {
 			out = append(out, mdPage{Slug: slug, Route: p.Route})
 		}
 	}
-	return mustJSON(out)
+	return out
 }
 
 // PageMarkdown returns the Markdown version of the page at route.
@@ -37,9 +37,9 @@ func PageMarkdown(r string) string {
 	return s.Markdown(p)
 }
 
-// LLMsPathsJSON lists the paths of every llms.txt and llms-full.txt,
-// without "/" and ".txt" ("llms", "ja/llms-full", "gosfc/llms").
-func LLMsPathsJSON() string {
+// LLMsPaths lists the paths of every llms.txt and llms-full.txt, without
+// "/" and ".txt" ("llms", "ja/llms-full", "gosfc/llms").
+func LLMsPaths() []string {
 	var out []string
 	for _, s := range sites {
 		for _, loc := range s.Config.Locales {
@@ -48,7 +48,7 @@ func LLMsPathsJSON() string {
 			}
 		}
 	}
-	return mustJSON(out)
+	return out
 }
 
 // LLMs returns the llms.txt or llms-full.txt at path ("/ja/llms.txt").

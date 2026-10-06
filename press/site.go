@@ -43,6 +43,9 @@ type Page struct {
 	// Source is the synced document this page is a copy of, if any.
 	Source     string // source name in Config.Sources ("goesm")
 	SourcePath string // path in that repository ("docs/otelc.md")
+	// SourceRef is the revision the document was synced from, when it is
+	// not the source's Ref (frontmatter `ref:`).
+	SourceRef string
 
 	body     string
 	rendered bool
@@ -139,7 +142,7 @@ func (s *Site) add(loc *Locale, file string) error {
 		if !ok || s.Config.Sources[name].Repo == "" {
 			return fmt.Errorf("%s: unknown source %q", file, src)
 		}
-		p.Source, p.SourcePath = name, sp
+		p.Source, p.SourcePath, p.SourceRef = name, sp, str(fm, "ref")
 		s.bySrc[loc.Code+":"+name+":"+sp] = p
 	}
 	hero := mapOf(fm, "hero")
@@ -330,7 +333,7 @@ func (s *Site) resolveLink(p *Page, dest string, image bool) (string, bool) {
 		if image {
 			return src.Assets + rel, false
 		}
-		return src.Repo + "/blob/" + src.Ref + "/" + rel + frag, true
+		return src.Repo + "/blob/" + s.sourceRef(p) + "/" + rel + frag, true
 	}
 	rel := path.Clean(path.Join(path.Dir(p.File), target))
 	if q := s.byFile[rel]; q != nil {
@@ -477,13 +480,20 @@ func (s *Site) Alternates(route string) []Alternate {
 // its own repository for a synced page, else the content file.
 func (s *Site) EditLink(p *Page) (link string, synced bool) {
 	if p.Source != "" {
-		src := s.Config.Sources[p.Source]
-		return src.Repo + "/blob/" + src.Ref + "/" + p.SourcePath, true
+		return s.Config.Sources[p.Source].Repo + "/blob/" + s.sourceRef(p) + "/" + p.SourcePath, true
 	}
 	if s.Config.EditBase == "" {
 		return "", false
 	}
 	return s.Config.EditBase + p.File, false
+}
+
+// sourceRef is the revision synced page p was copied from.
+func (s *Site) sourceRef(p *Page) string {
+	if p.SourceRef != "" {
+		return p.SourceRef
+	}
+	return s.Config.Sources[p.Source].Ref
 }
 
 // Sitemap returns sitemap.xml with hreflang alternates.

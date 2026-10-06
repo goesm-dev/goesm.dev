@@ -141,7 +141,7 @@ func TestLLMs(t *testing.T) {
 }
 
 func TestVersion(t *testing.T) {
-	if v := NavBar("/ja/guide/").Version; v.Label != goesmVersion || v.Links[0].Link != "https://github.com/goesm-dev/goesm/releases/tag/"+goesmVersion || v.Heading != "バージョン" {
+	if v := NavBar("/ja/guide/").Version; v.Label != goesmVersion || !strings.HasPrefix(v.Links[0].Link, "/ja/reference/changelog/#v") || v.Heading != "バージョン" {
 		t.Errorf("goesm version %+v", v)
 	}
 	if v := NavBar("/gosfc/guide/").Version; v.Label != gosfcVersion || v.Links[1].Link != "https://pkg.go.dev/github.com/goesm-dev/gosfc@"+gosfcVersion {

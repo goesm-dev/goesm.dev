@@ -57,6 +57,10 @@ type repo struct {
 	// sections maps README section slugs (English heading) to the route of
 	// the guide page that includes them.
 	sections map[string]string
+	// later maps documents that the version in go.mod does not have yet
+	// (they are in docs) to the commit they are synced from instead. Drop
+	// an entry once go.mod selects a version that has the document.
+	later map[string]string
 }
 
 var locales = []struct{ code, prefix, suffix string }{
@@ -90,6 +94,12 @@ func main() {
 				"compare/README.md":           "/reference/compare/",
 				"docs/concurrency.md":         "/reference/concurrency/",
 				"docs/use-cases.md":           "/reference/use-cases/",
+				"CHANGELOG.md":                "/reference/changelog/",
+			},
+			// The release notes of v0.0.1-beta.0 to beta.3 were written
+			// after beta.3 (goesm #91, #92).
+			later: map[string]string{
+				"CHANGELOG.md": "65fa6ac4fb8b350ddd82b296fdc02f8d3c0c87af",
 			},
 			sections: map[string]string{
 				"intro":        "/guide/",
@@ -255,6 +265,12 @@ func (r *repo) sync(out map[string][]byte) error {
 	for _, l := range locales {
 		for src, route := range r.docs {
 			file := strings.TrimSuffix(src, ".md") + l.suffix
+			r := r
+			ref := ""
+			if rev, ok := r.later[src]; ok {
+				at := *r
+				at.rev, r, ref = rev, &at, "ref: "+rev+"\n"
+			}
 			data, err := r.show(file)
 			if err != nil {
 				return err
@@ -271,7 +287,7 @@ func (r *repo) sync(out map[string][]byte) error {
 				return err
 			}
 			name := strings.Trim(strings.TrimPrefix(route, "/reference/"), "/")
-			doc := "---\nsource: " + r.name + ":" + file + "\n---\n\n" + generatedMarker + "\n\n" + body
+			doc := "---\nsource: " + r.name + ":" + file + "\n" + ref + "---\n\n" + generatedMarker + "\n\n" + body
 			out[r.content+l.code+"/reference/"+name+".md"] = []byte(doc)
 		}
 	}
@@ -456,6 +472,14 @@ func (r *repo) link(out map[string][]byte, prefix, file, dest string, image bool
 	if route, ok := r.docs[en]; ok {
 		if en == "README.md" && frag != "" {
 			return r.readmeAnchor(prefix, rel, frag)
+		}
+		// The document's own other language ("[日本語](CHANGELOG.ja.md)")
+		// is its page in that language.
+		if self := strings.TrimSuffix(strings.TrimSuffix(file, ".md"), ".ja") + ".md"; self == en && rel != file {
+			prefix = ""
+			if strings.HasSuffix(rel, ".ja.md") {
+				prefix = "/ja"
+			}
 		}
 		return r.base + prefix + route + frag, nil
 	}

@@ -58,7 +58,10 @@ test("the nav bar says which version the docs describe", () => {
   assert.match(goesm[2], /^v\d+\.\d+\.\d+/);
   assert.equal(goesm[1], `Docs for goesm ${goesm[2]}`);
   assert.ok(page("/ja/guide/").includes(`goesm ${goesm[2]} のドキュメント`));
-  assert.ok(page("/guide/").includes(`href="https://github.com/goesm-dev/goesm/releases/tag/${goesm[2]}"`));
+  // The release notes are the version's section of the changelog page.
+  const notes = page("/ja/guide/").match(/href="(\/ja\/reference\/changelog\/)#([^"]+)"/);
+  assert.ok(notes, "no link to the release notes on /ja/guide/");
+  assert.ok(page(notes[1]).includes(`id="${notes[2]}"`), `${notes[1]} has no #${notes[2]}`);
   const gosfc = page("/gosfc/guide/").match(version);
   assert.ok(gosfc, "no version menu on /gosfc/guide/");
   assert.ok(page("/gosfc/guide/").includes(`href="https://github.com/goesm-dev/gosfc/`), gosfc[1]);

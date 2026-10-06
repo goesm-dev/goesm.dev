@@ -139,3 +139,22 @@ func TestLLMs(t *testing.T) {
 		}
 	}
 }
+
+func TestVersion(t *testing.T) {
+	if v := NavBar("/ja/guide/").Version; v.Label != goesmVersion || v.Links[0].Link != "https://github.com/goesm-dev/goesm/releases/tag/"+goesmVersion || v.Heading != "バージョン" {
+		t.Errorf("goesm version %+v", v)
+	}
+	if v := NavBar("/gosfc/guide/").Version; !strings.HasPrefix(gosfcRef, v.Label) || len(v.Label) != 7 || v.Links[0].Link != "https://github.com/goesm-dev/gosfc/commit/"+gosfcRef {
+		t.Errorf("gosfc version %+v", v)
+	}
+	for v, want := range map[string]string{
+		"v0.0.0-20261005171715-4f0689be9e96":       "4f0689b 2026-10-05",
+		"v1.2.4-pre.0.20261005171715-4f0689be9e96": "4f0689b 2026-10-05",
+		"v0.0.1-beta.3": "v0.0.1-beta.3 ",
+		"v0.0.1-beta.3.0.20261005171715-4f0689be9e96": "4f0689b 2026-10-05",
+	} {
+		if c, d := pseudo(v); c+" "+d != want {
+			t.Errorf("pseudo(%s) = %s %s, want %s", v, c, d, want)
+		}
+	}
+}

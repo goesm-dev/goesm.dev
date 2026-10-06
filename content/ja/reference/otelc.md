@@ -22,7 +22,7 @@ OTEL_TRACES_EXPORTER=console node dist/app.js
 
 ## native Go と一致するもの
 
-`TestOtelc` (`go test ./test -run TestOtelc`、`GOESM_TEST_OTELC` に otelc の binary を指定) は [testdata/otelc](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.3/testdata/otelc) を native と goesm で build し、console exporter が出す telemetry が Node.js と Bun で同じであることを確認します:
+`TestOtelc` (`go test ./test -run TestOtelc`、`GOESM_TEST_OTELC` に otelc の binary を指定) は [testdata/otelc](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.4/testdata/otelc) を native と goesm で build し、console exporter が出す telemetry が Node.js と Bun で同じであることを確認します:
 
 * otelc の `net/http` client instrumentation が作る span (名前、kind、attribute、status)
 * OpenTelemetry API で開始した span と、その下にネストする HTTP span (その中で起動した goroutine からのものも含む。otelc は現在の span を goroutine-local storage で伝播します)

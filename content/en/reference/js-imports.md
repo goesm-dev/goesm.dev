@@ -89,7 +89,7 @@ if errors.As(err, &jerr) {
 
 ## Performance
 
-A call through `//goesm:import` costs a few nanoseconds more than a call from JavaScript to the same function when the arguments are numbers, ASCII strings or structs of such fields. The same call through `syscall/js` costs 20 to 50 ns more with numbers and strings, and 8 to 50 times as much with a slice or a struct, which `syscall/js` code builds one element or property at a time ([dom.md](/reference/dom/#performance)). [bench/jsimport](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.3/bench/jsimport) measures them:
+A call through `//goesm:import` costs a few nanoseconds more than a call from JavaScript to the same function when the arguments are numbers, ASCII strings or structs of such fields. The same call through `syscall/js` costs 20 to 50 ns more with numbers and strings, and 8 to 50 times as much with a slice or a struct, which `syscall/js` code builds one element or property at a time ([dom.md](/reference/dom/#performance)). [bench/jsimport](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.4/bench/jsimport) measures them:
 
 | Call | JS → JS | Go → JS, `//goesm:import` | Go → JS, `syscall/js` |
 | --- | ---: | ---: | ---: |

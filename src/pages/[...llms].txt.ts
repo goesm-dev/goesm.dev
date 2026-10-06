@@ -1,11 +1,10 @@
 // llms.txt and llms-full.txt (https://llmstxt.org/) of each site and locale:
 // /llms.txt, /ja/llms.txt, /gosfc/llms.txt, /gosfc/ja/llms-full.txt, ...
 import type { APIRoute } from "astro";
-import { LLMs, LLMsPathsJSON } from "go:goesm.dev/site";
+import { LLMs, LLMsPaths } from "go:goesm.dev/site";
 
 export function getStaticPaths() {
-  const paths: string[] = JSON.parse(LLMsPathsJSON());
-  return paths.map((llms) => ({ params: { llms } }));
+  return LLMsPaths().map((llms) => ({ params: { llms } }));
 }
 
 export const GET: APIRoute = ({ params }) =>

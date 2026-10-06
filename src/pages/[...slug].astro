@@ -1,11 +1,12 @@
 ---
-import { RoutesJSON } from "go:goesm.dev/site";
+import { Routes } from "go:goesm.dev/site";
 import Layout from "../theme/Layout.astro";
 
 // Every Markdown page of the content tree, as the Go engine lists them.
+// This frontmatter stays TypeScript: getStaticPaths is an export, and a Go
+// frontmatter cannot export anything.
 export function getStaticPaths() {
-  const routes: { slug: string; route: string }[] = JSON.parse(RoutesJSON());
-  return routes.map((r) => ({ params: { slug: r.slug || undefined }, props: { route: r.route } }));
+  return Routes().map((r) => ({ params: { slug: r.slug || undefined }, props: { route: r.route } }));
 }
 
 const { route } = Astro.props;

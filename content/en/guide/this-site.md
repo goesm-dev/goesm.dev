@@ -43,19 +43,40 @@ runs under Node.js at build time, compiled by goesm.
 
 ## Astro and Vue
 
-The Astro pages call Go directly. `src/pages/[...slug].astro` asks the engine
-for the list of pages:
+The Astro files are Go too. The page shell, `src/theme/Layout.astro`, has a Go
+frontmatter (gosfc's `---go`) that imports the theme's components and asks the
+engine what `<head>` needs:
 
 ```astro
----
-import { RoutesJSON, $runtime as rt } from "go:goesm.dev/site";
+---go
+import (
+	"goesm.dev/site"
 
-export function getStaticPaths() {
-  const routes = JSON.parse(rt.toJSString(RoutesJSON()));
-  return routes.map((r) => ({ params: { slug: r.slug || undefined }, props: { route: r.route } }));
+	DocPage "./DocPage.vue"
+	NavBar "./NavBar.vue"
+	_ "../styles/theme.css"
+)
+
+type Props struct {
+	Route string
 }
+
+route := props.Route
+head := site.PageHead(route)
+isDoc := head.Found && head.Layout == "doc"
 ---
+
+<html lang={head.lang}>
+  <head>
+    <title>{head.title}</title>
 ```
+
+Some parts stay TypeScript, each for a reason:
+
+- `src/pages/[...slug].astro` lists the pages in `getStaticPaths`, an export, and a Go frontmatter cannot export anything. Its frontmatter calls Go through a `go:` import: `Routes().map(...)`.
+- The Markdown versions, llms.txt, the search indexes and the sitemap are Astro endpoints (`.ts` files). Each is a few lines that return what a Go function writes.
+- The script that sets the dark theme before the first paint is an inline `<script>`. `<script lang="go">` is bundled and runs after the page is parsed, which is too late.
+- `src/theme/ClientRouter.ts` re-exports Astro's `ClientRouter` as a default export, because Go import syntax imports default exports only.
 
 The theme is a set of Vue components whose `<script setup>` is Go. The doc page
 component, for example, calls the engine and hands the result to its template:

@@ -1,9 +1,9 @@
 github.com/evanw/esbuild v0.28.2 h1:A2uETn4jrQTcXaT/shwTDTYBxDjl7fV7nXmUrJxfA2w=
 github.com/evanw/esbuild v0.28.2/go.mod h1:D2vIQZqV/vIf/VRHtViaUtViZmG7o+kKmlBfVQuRi48=
-github.com/goesm-dev/goesm v0.0.1-beta.6 h1:gQdjPRkFniWAbjCL9wlKvorX5Yiu65H1UiLFxuOapHI=
-github.com/goesm-dev/goesm v0.0.1-beta.6/go.mod h1:XAlhRWFsSZvLXYuyxnHhUmkUXiFCMSuX1ChG7f4bPQE=
-github.com/goesm-dev/gosfc v0.0.1-beta.3 h1:zrtAMw5/iV7or4oe4Z5Nh6RYK+7qsdy98E164aQlY2c=
-github.com/goesm-dev/gosfc v0.0.1-beta.3/go.mod h1:1nPrdPVxe+50s7tg87DebLUbDSSJxXpH4tQ/Y5OcA0k=
+github.com/goesm-dev/goesm v0.0.1-beta.7 h1:NoUpzuhyrNNQhbKkakhMBUNP8MQ3G/L3VIKsxXsQ6M8=
+github.com/goesm-dev/goesm v0.0.1-beta.7/go.mod h1:XAlhRWFsSZvLXYuyxnHhUmkUXiFCMSuX1ChG7f4bPQE=
+github.com/goesm-dev/gosfc v0.0.1-beta.4 h1:qXvN45U7TakqMDk2eBZXsLcpGmskFaB3Cg5rm3Rgx3o=
+github.com/goesm-dev/gosfc v0.0.1-beta.4/go.mod h1:1nPrdPVxe+50s7tg87DebLUbDSSJxXpH4tQ/Y5OcA0k=
 github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=
 github.com/google/go-cmp v0.6.0/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
 github.com/yuin/goldmark v1.8.6 h1:d0VcaP1sx9GkFVkoW+KtggpGi2KZ965i14b0+bDQST4=

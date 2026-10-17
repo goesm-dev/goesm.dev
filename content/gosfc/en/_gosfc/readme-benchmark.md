@@ -1,6 +1,6 @@
 <!-- Synced by cmd/syncdocs. Edit the source instead. -->
 
-The same components written with `<script setup lang="go">` and with `<script setup lang="ts">` ([bench/](https://github.com/goesm-dev/gosfc/tree/v0.0.1-beta.3/bench)), built with Vite 8 and `@vitejs/plugin-vue`. The Go side adds `@gosfc/vite` in front; nothing else differs.
+The same components written with `<script setup lang="go">` and with `<script setup lang="ts">` ([bench/](https://github.com/goesm-dev/gosfc/tree/v0.0.1-beta.4/bench)), built with Vite 8 and `@vitejs/plugin-vue`. The Go side adds `@gosfc/vite` in front; nothing else differs.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="/repo/gosfc/bench/results-dark.svg">

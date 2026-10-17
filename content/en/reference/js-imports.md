@@ -66,6 +66,7 @@ Arguments are converted from Go to JavaScript and results from JavaScript to Go,
 | other slices and arrays | array |
 | `map[string]T` | plain object |
 | struct, pointer to struct | plain object with the exported fields, named as `encoding/json` names them (the `json` tag name, or the field name); an embedded struct or pointer to struct contributes its fields |
+| other pointers | the value pointed to, converted; `null` for nil. A result is a pointer to a converted copy, `nil` for `null` or `undefined` |
 | function (arguments only) | function, which converts its own arguments and results the same way |
 | `any` | to JavaScript, the conversion of the dynamic value; to Go, the value as `encoding/json` decodes it into an `any` |
 | variadic parameter | separate arguments |
@@ -89,7 +90,7 @@ if errors.As(err, &jerr) {
 
 ## Performance
 
-A call through `//goesm:import` costs a few nanoseconds more than a call from JavaScript to the same function when the arguments are numbers, ASCII strings or structs of such fields. The same call through `syscall/js` costs 20 to 50 ns more with numbers and strings, and 8 to 50 times as much with a slice or a struct, which `syscall/js` code builds one element or property at a time ([dom.md](/reference/dom/#performance)). [bench/jsimport](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.4/bench/jsimport) measures them:
+A call through `//goesm:import` costs a few nanoseconds more than a call from JavaScript to the same function when the arguments are numbers, ASCII strings or structs of such fields. The same call through `syscall/js` costs 20 to 50 ns more with numbers and strings, and 8 to 50 times as much with a slice or a struct, which `syscall/js` code builds one element or property at a time ([dom.md](/reference/dom/#performance)). [bench/jsimport](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.5/bench/jsimport) measures them:
 
 | Call | JS → JS | Go → JS, `//goesm:import` | Go → JS, `syscall/js` |
 | --- | ---: | ---: | ---: |
@@ -104,7 +105,7 @@ Node.js 22 on a 4 vCPU Intel Xeon 2.10 GHz cloud VM, the median of 7 runs. On Bu
 
 ## Limitations
 
-- A package with `//goesm:import` declarations builds only with goesm: `go build` reports the functions without bodies. `go vet` and gopls accept it.
+- A package with `//goesm:import` declarations builds only with goesm: `go build` and `go vet` report the functions without bodies (`missing function body`). An empty assembly file in the package, such as `goesm.s`, makes both accept them, as it does for the standard library's functions implemented in assembly; gopls accepts them either way.
 - `goesm build` bundles with esbuild, which handles `.ts`, `.js` and `.mjs` files but not `.vue`; Vue components are used through gosfc, which builds with Vite.
 - A JavaScript function returned to Go is a `js.Value`, called with `Invoke`.
 - A Go function passed to JavaScript that blocks, for example by sleeping, waiting on a channel or calling an `await` import, returns a Promise to JavaScript. JavaScript code that calls it without awaiting the result, such as `xs.map(f)`, gets Promises instead of values.

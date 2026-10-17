@@ -26,6 +26,8 @@ import { Result } from "./goesm-ts/example.com/app/main.ts";
 console.log(Result()); // 3
 ```
 
+Several packages, `goesm emit-ts ./cart ./checkout`, build as one program whose modules share state ([docs/js-exports.md](/reference/js-exports/)).
+
 To type-check code that imports the tree with `tsc`, enable `allowImportingTsExtensions`. [docs/example-output.md](/reference/example-output/) shows the generated TypeScript and JavaScript.
 
 ### `goesm build`: a bundled ES module
@@ -56,7 +58,7 @@ goesm keeps the TypeScript module of every package it lowers in a cache, `goesm/
 - Several results come back as an array. A final `error` result is thrown as a `GoError`, which is the Go error again when it is passed back to Go.
 - A function that may block (channel operations, `time.Sleep`, waiting on a mutex) is an `async function` and returns a Promise; the others are synchronous.
 
-[docs/js-exports.md](/reference/js-exports/) has the details. [examples/](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.5/examples) has runnable examples (the cart, standard library use, goroutines) with the JavaScript that calls them.
+[docs/js-exports.md](/reference/js-exports/) has the details. [examples/](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.6/examples) has runnable examples (the cart, standard library use, goroutines) with the JavaScript that calls them.
 
 ### Calling JavaScript from Go
 

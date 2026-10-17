@@ -84,7 +84,7 @@ cart.Add({ name: "みかん", price: 100 }, { name: "柿", price: 80 });
 cart.Total(); // 180
 ```
 
-The methods of a handle convert their arguments and results like the package's functions. Each method is also a function of the module, `Cart$Add(cart, item)`. A handle of another package's type, such as a `*strings.Builder` an exported function returns, has its exported methods too, and so does a handle returned inside an `any`, such as a `*Box[int]` of a generic type from a lookup function returning `any` (its methods are then properties of the object itself, since every instantiation of a generic type shares one class). The fields of a handle hold Go's own representation (a Go string is not a JS string), so read data through methods and functions, which convert it.
+The methods of a handle convert their arguments and results like the package's functions. Each method is also a function of the module, `Cart$Add(cart, item)`. A handle of another package's type, such as a `*strings.Builder` an exported function returns, has its exported methods too, and so does a handle returned inside an `any`, such as a `*Box[int]` of a generic type from a lookup function returning `any` (its methods are then properties of the object itself, since every instantiation of a generic type shares one class), a handle inside a slice, map or struct in such an `any`, and a handle that a method of one of these returns. The fields of a handle hold Go's own representation (a Go string is not a JS string), so read data through methods and functions, which convert it.
 
 A handle, or an object of one of the package's struct classes, passed where an interface is expected is that interface value if its type has the interface's methods.
 
@@ -132,4 +132,4 @@ The exports are typed with the JavaScript types of the table: `Total(items: Arra
 
 ## Performance
 
-A call with numbers costs what a call to a JavaScript function costs: the export passes them as they are. A string is converted from UTF-16 to UTF-8 on the way in and back on the way out; an ASCII string is passed unchanged after a scan. Slices, maps and structs are copied element by element. The calling kernels of [bench](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.5/bench) measure the cost: `Add`, `Upper` and `Handle` call Go with numbers and strings 100,000 or 10,000 times.
+A call with numbers costs what a call to a JavaScript function costs: the export passes them as they are. A string is converted from UTF-16 to UTF-8 on the way in and back on the way out; an ASCII string is passed unchanged after a scan. Slices, maps and structs are copied element by element. The calling kernels of [bench](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.6/bench) measure the cost: `Add`, `Upper` and `Handle` call Go with numbers and strings 100,000 or 10,000 times.

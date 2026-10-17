@@ -1,6 +1,6 @@
 ---
 source: goesm:CHANGELOG.ja.md
-ref: 69ee55a185a7b89941a3c8ce24da90a0753a8d81
+ref: f9d36558777bda91b6abc875da9ede4d7139e6c7
 ---
 
 <!-- Synced by cmd/syncdocs. Edit the source instead. -->
@@ -12,7 +12,15 @@ goesm の各バージョンの変更点を、新しい順に記載します。�
 
 ## Unreleased
 
-v0.0.1-beta.5 以降に `main` に入った変更です。差分は [v0.0.1-beta.5...main](https://github.com/goesm-dev/goesm/compare/v0.0.1-beta.5...main) で確認できます。
+v0.0.1-beta.6 以降に `main` に入った変更です。差分は [v0.0.1-beta.6...main](https://github.com/goesm-dev/goesm/compare/v0.0.1-beta.6...main) で確認できます。
+
+## v0.0.1-beta.6
+
+2026-10-17 にタグを付けました。v0.0.1-beta.5 からの差分は [v0.0.1-beta.5...v0.0.1-beta.6](https://github.com/goesm-dev/goesm/compare/v0.0.1-beta.5...v0.0.1-beta.6) で確認できます。
+
+### ブロッキング解析
+
+- 関数 literal、宣言された関数、nil しか代入されず、アドレスも取られない関数型の変数の呼び出しは、そのどれかがブロックするときだけブロックするようになりました。これまでは、プログラムのどこかで同じシグネチャの関数値が 1 つでもブロックするとブロックするとみなしていました。そのため、1 つのプログラムとしてビルドするアプリ (gosfc) では、こうした変数を呼ぶ Vue コンポーネントの setup が async になり、Vue がその setup を使えないことがありました。
 
 ## v0.0.1-beta.5
 

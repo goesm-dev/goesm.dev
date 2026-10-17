@@ -26,6 +26,8 @@ import { Result } from "./goesm-ts/example.com/app/main.ts";
 console.log(Result()); // 3
 ```
 
+`goesm emit-ts ./cart ./checkout` のように複数のパッケージを渡すと、状態を共有する 1 つのプログラムとしてビルドします ([docs/js-exports.ja.md](/ja/reference/js-exports/))。
+
 ツリーを import するコードを `tsc` で型検査するには `allowImportingTsExtensions` を有効にします。生成される TypeScript と JavaScript は [docs/example-output.ja.md](/ja/reference/example-output/) にあります。
 
 ### `goesm build`: バンドル済みの ES モジュール
@@ -56,7 +58,7 @@ goesm は、変換した各パッケージの TypeScript モジュールをキ�
 - 複数の戻り値は配列として返ります。最後の戻り値の `error` は `GoError` として投げられ、Go に渡し直すと元の Go のエラーに戻ります。
 - チャネル操作、`time.Sleep`、ミューテックスの待ちのようにブロックしうる関数は、Promise を返す `async function` になります。それ以外の関数は同期関数です。
 
-詳しくは [docs/js-exports.ja.md](/ja/reference/js-exports/) を参照してください。[examples/](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.5/examples) には、呼び出し側の JavaScript と組み合わせて実行できる例があります。
+詳しくは [docs/js-exports.ja.md](/ja/reference/js-exports/) を参照してください。[examples/](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.6/examples) には、呼び出し側の JavaScript と組み合わせて実行できる例があります。
 
 ### Go から JavaScript を呼ぶ
 

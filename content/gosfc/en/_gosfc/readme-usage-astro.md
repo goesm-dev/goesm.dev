@@ -7,7 +7,9 @@
    go get -tool github.com/goesm-dev/gosfc/cmd/gosfc@<version>
    ```
 
-2. Add the integration to Astro. `@astrojs/vue` is added if it is not already there.
+2. Install the integration from npm (`bun add @gosfc/astro`, `pnpm add @gosfc/astro` or `npm install @gosfc/astro`). For plain Vite + Vue projects, install `@gosfc/vite` instead.
+
+3. Add the integration to Astro. `@astrojs/vue` is added if it is not already there.
 
    ```js
    // astro.config.mjs
@@ -19,7 +21,7 @@
    });
    ```
 
-3. Use `<script setup lang="go">` in your `.vue` files.
+4. Use `<script setup lang="go">` in your `.vue` files.
 
    ```astro
    ---

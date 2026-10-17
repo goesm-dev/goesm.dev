@@ -97,9 +97,9 @@ func main() {
 				"CHANGELOG.md":                "/reference/changelog/",
 			},
 			// v0.0.1-beta.5 was tagged with its release notes still under
-			// Unreleased; goesm #102 names the section after the tag.
+			// Unreleased; goesm #102 named the section after the tag.
 			later: map[string]string{
-				"CHANGELOG.md": "c447dd69ca9096c464b96892f05aa4cc081b8c92",
+				"CHANGELOG.md": "69ee55a185a7b89941a3c8ce24da90a0753a8d81",
 			},
 			sections: map[string]string{
 				"intro":        "/guide/",

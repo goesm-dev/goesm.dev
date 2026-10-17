@@ -1,6 +1,6 @@
 ---
 source: goesm:CHANGELOG.ja.md
-ref: c447dd69ca9096c464b96892f05aa4cc081b8c92
+ref: 69ee55a185a7b89941a3c8ce24da90a0753a8d81
 ---
 
 <!-- Synced by cmd/syncdocs. Edit the source instead. -->

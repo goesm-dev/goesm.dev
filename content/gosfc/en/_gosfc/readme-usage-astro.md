@@ -9,7 +9,7 @@
 
 2. Install the integration from npm (`bun add @gosfc/astro`, `pnpm add @gosfc/astro` or `npm install @gosfc/astro`). For plain Vite + Vue projects, install `@gosfc/vite` instead.
 
-3. Add the integration to Astro. `@astrojs/vue` is added if it is not already there.
+3. Add the integration to Astro. When the project has `@astrojs/vue` installed, it is added if it is not already there. A project with Go only in `.astro` files needs neither Vue nor `@astrojs/vue`; [examples/astro-go](https://github.com/goesm-dev/gosfc/tree/v0.0.1-beta.7/examples/astro-go) is one.
 
    ```js
    // astro.config.mjs

@@ -29,15 +29,16 @@ func Label(price int) string {
 
 ## ディレクティブ
 
-`//goesm:import` は、本体のない関数宣言か、値のないパッケージ変数の宣言の直前に書きます。
+`//goesm:import` は、本体のない関数宣言か、値のないパッケージ変数の宣言の直前に書きます。関数には goesm が無視する本体を書くこともできます ([制限](#制限) を参照)。
 
 ```go
-//goesm:import "<モジュール>" [<エクスポート名>] [await]
+//goesm:import "<モジュール>" [<エクスポート名>] [await | lazy]
 ```
 
 - **モジュール**は import の指定子です。`./` か `../` で始まるパスは Go のファイルからの相対パスで、ファイルが存在しなければなりません。goesm は、生成したモジュールの位置から見た相対パスに書き換えて出力します。`chart.js` のようなそれ以外の指定子はパッケージを指します。`goesm build` は、実行したディレクトリとその親ディレクトリにある `node_modules` からパッケージを探します。`goesm emit-ts` の出力では指定子がそのまま残り、利用側のバンドラーが解決します。`node:path`、`bun:sqlite`、`cloudflare:sockets` のように JavaScript のランタイムに組み込まれたモジュールは、`goesm build` の出力でも import のまま残り、出力を実行する環境で解決されます。
 - **エクスポート名**は取り込むエクスポートの名前です。`default` を書くか何も書かなければデフォルトエクスポートを、`*` を書けばモジュールの名前空間オブジェクトを取り込みます。
 - **await** は、Promise を返す関数に付けます。Go からはチャネルの受信と同じく Promise が決着するまでブロックする関数として呼べ、その関数を呼ぶ側の関数も JavaScript では非同期になります。Promise を返す関数には `await` が必要です。付けずに宣言すると、Promise が返った時点で呼び出しが panic します。ただし、戻り値が `js.Value` の場合は Promise をそのまま受け取り、戻り値がない場合は Promise を待たずに戻ります。
+- **lazy** を付けると、モジュールをプログラムの開始時ではなく、関数を最初に呼んだ時点で動的な `import()` によって読み込みます。Vite や esbuild などのバンドラーは、そのモジュールを別のチャンクに分けます。lazy の関数は `await` の関数と同じように呼び出され、同じモジュールを指す関数がいくつあっても、モジュールの読み込みは一度だけです。`*` を指定した関数は引数を取らず、モジュールの名前空間オブジェクトを `js.Value` として返します。
 
 ```go
 //goesm:import "chart.js" Chart
@@ -48,6 +49,9 @@ func fetchUser(id string) (User, error)
 
 //goesm:import "./config.ts" VERSION
 var version string
+
+//goesm:import "./pdf.ts" renderPDF lazy
+func renderPDF(doc js.Value) (js.Value, error) // 最初の呼び出しで pdf.ts を読み込む
 ```
 
 パッケージ変数は、そのパッケージのほかの変数より先に、Go パッケージの初期化時点でモジュールがエクスポートしている値で初期化されます。
@@ -63,9 +67,9 @@ var version string
 | `string` | string |
 | `js.Value`、`js.Func` | 値そのもの |
 | `[]byte` | `Uint8Array` |
-| ほかのスライスと配列 | 配列 |
-| `map[string]T` | プレーンなオブジェクト |
-| 構造体と構造体へのポインタ | エクスポートされたフィールドを持つプレーンなオブジェクト。プロパティ名は `encoding/json` と同じく `json` タグの名前かフィールド名。埋め込んだ構造体と構造体へのポインタのフィールドは外側のオブジェクトのプロパティになる |
+| ほかのスライスと配列 | 配列。nil のスライスは空の配列 |
+| `map[string]T` | プレーンなオブジェクト。nil のマップは空のオブジェクト |
+| 構造体と構造体へのポインタ | エクスポートされたフィールドを持つプレーンなオブジェクト。プロパティ名は、`js` タグがあればその名前、なければ `encoding/json` と同じく `json` タグの名前かフィールド名。埋め込んだ構造体と構造体へのポインタのフィールドは外側のオブジェクトのプロパティになる |
 | そのほかのポインタ | 指す先の値を変換したもの。nil は `null`。結果では変換したコピーへのポインタになり、`null` と `undefined` は nil |
 | 関数。引数としてのみ渡せる | 関数。その関数の引数と戻り値も同じ規則で変換される |
 | `any` | JavaScript へは動的な値の型に従って変換し、Go へは `encoding/json` が `any` にデコードする形に変換する |
@@ -90,7 +94,7 @@ if errors.As(err, &jerr) {
 
 ## 性能
 
-引数が数値か ASCII の文字列か、それらをフィールドに持つ構造体であれば、`//goesm:import` 経由の呼び出しは JavaScript から同じ関数を呼ぶ場合より数ナノ秒多くかかるだけです。同じ呼び出しを `syscall/js` で書くと、数値と文字列では 20〜50 ns 多くかかり、スライスと構造体では 8〜50 倍の時間がかかります。`syscall/js` のコードは、スライスと構造体を要素やプロパティごとに組み立てるためです。`syscall/js` の性能は [dom.ja.md](/ja/reference/dom/#性能) でも説明しています。計測は [bench/jsimport](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.7/bench/jsimport) で行いました。
+引数が数値か ASCII の文字列か、それらをフィールドに持つ構造体であれば、`//goesm:import` 経由の呼び出しは JavaScript から同じ関数を呼ぶ場合より数ナノ秒多くかかるだけです。同じ呼び出しを `syscall/js` で書くと、数値と文字列では 20〜50 ns 多くかかり、スライスと構造体では 8〜50 倍の時間がかかります。`syscall/js` のコードは、スライスと構造体を要素やプロパティごとに組み立てるためです。`syscall/js` の性能は [dom.ja.md](/ja/reference/dom/#性能) でも説明しています。計測は [bench/jsimport](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.8/bench/jsimport) で行いました。
 
 | 呼び出し | JS → JS | Go → JS、`//goesm:import` | Go → JS、`syscall/js` |
 | --- | ---: | ---: | ---: |
@@ -105,7 +109,7 @@ if errors.As(err, &jerr) {
 
 ## 制限
 
-- `//goesm:import` を含むパッケージは goesm でしかビルドできません。`go build` と `go vet` は本体のない関数をエラー (`missing function body`) にします。パッケージに空のアセンブリファイル (`goesm.s` など) を置くと、標準ライブラリのアセンブリで実装された関数と同じように、どちらも受け付けます。gopls はどちらの場合も受け付けます。
+- `go build` と `go vet` は本体のない関数をエラー (`missing function body`) にします。そのため、取り込む関数には本体を書くこともできます。goesm はその本体を取り込んだ関数に置き換えます。本体は `{ panic("goesm:import") }` のように書きます。この場合、`go vet` はパッケージをそのまま検査できます。パッケージに空のアセンブリファイル (`goesm.s` など) を置いても、標準ライブラリのアセンブリで実装された関数と同じように、どちらも本体のない関数を受け付けます。gopls はどちらの書き方も受け付けます。
 - `goesm build` は esbuild でバンドルするので、`.ts`、`.js`、`.mjs` は扱えますが `.vue` は扱えません。Vue コンポーネントは、Vite でビルドする gosfc から使います。
 - Go に返された JavaScript の関数は `js.Value` になり、`Invoke` で呼びます。
 - JavaScript に渡した Go の関数がブロックする場合、つまりスリープやチャネルの待機、`await` を付けた import の呼び出しを含む場合、その関数は JavaScript に Promise を返します。`xs.map(f)` のように結果を await せずに呼ぶ JavaScript のコードは、値の代わりに Promise を受け取ります。

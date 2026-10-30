@@ -21,6 +21,7 @@ var guideSidebar = func(guide, intro, start, vue, status, perf, this, ref string
 			{Link: "/reference/js-exports"},
 			{Link: "/reference/js-imports"},
 			{Link: "/reference/dom"},
+			{Link: "/reference/go-and-js"},
 			{Link: "/reference/concurrency"},
 			{Link: "/reference/conformance"},
 			{Link: "/reference/otelc"},

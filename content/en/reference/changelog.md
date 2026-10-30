@@ -11,7 +11,46 @@ The changes in each goesm version, newest first. Every tagged version is a semve
 
 ## Unreleased
 
-Changes on `main` since v0.0.1-beta.7: [v0.0.1-beta.7...main](https://github.com/goesm-dev/goesm/compare/v0.0.1-beta.7...main).
+Changes on `main` since v0.0.1-beta.8: [v0.0.1-beta.8...main](https://github.com/goesm-dev/goesm/compare/v0.0.1-beta.8...main).
+
+## v0.0.1-beta.8
+
+Tagged on 2026-10-21. Changes since v0.0.1-beta.7: [v0.0.1-beta.7...v0.0.1-beta.8](https://github.com/goesm-dev/goesm/compare/v0.0.1-beta.7...v0.0.1-beta.8).
+
+### JS calling ABI
+
+- A `//goesm:import` function may have a body, such as `{ panic("goesm:import") }`, which goesm replaces with the import, so that `go build` and `go vet` accept the package without an empty assembly file.
+- An entry whose exported functions take a pointer to a struct type of another package, whose methods return a pointer to the same type, gave that type its JS methods twice, which esbuild rejected ("The symbol ... has already been declared"). It gives them once.
+- `//goesm:import "<module>" <export> lazy` imports the module with a dynamic `import()` on the first call of the function, so that a bundler splits it into a chunk of its own. The function blocks like an `await` import ([docs/js-imports.md](/reference/js-imports/#the-directive)).
+- A nil slice or map that Go passes to JavaScript, as an exported function's result or a `//goesm:import` function's argument, is an empty array, `Uint8Array`, object or `Map` instead of `null`, as JavaScript code would return, and result types no longer include `| null`. JavaScript may still pass `null` for one.
+- A `js` struct tag names a field in JavaScript ahead of its `json` tag: `` ID int `json:"id" js:"ID"` `` is `ID` in JavaScript, and `js:"-"` leaves a field out.
+
+### syscall/js
+
+- `Get`, `Index`, `Length` and `Call` work on booleans, numbers and strings as property accesses do in JavaScript (`js.ValueOf("abc").Length()` is 3) instead of panicking. `undefined` and `null` still panic with a `*js.ValueError`.
+- The new package `github.com/goesm-dev/goesm/promise` waits for a Promise: `promise.Await(p)` returns its value, or its rejection reason as a `js.Error`, so that `errors.As` reaches an `AbortError`. goesm compiles it to `await`; with Go's WebAssembly port it waits with `then` callbacks ([docs/dom.md](/reference/dom/#promises)).
+- The new package `github.com/goesm-dev/goesm/jscompat` gives Go code JavaScript's behaviour where Go's differs: `RegExp` for patterns in JavaScript's syntax (lookaround, backreferences), `Normalize` (NFC, NFD, NFKC, NFKD), `Round` as `Math.round`, the engine's `Cos`, `Sin` and other `Math` functions, and `UTF16Offset`, `ByteOffset` and `UTF16Len` for UTF-16 offsets such as `selectionStart` ([docs/go-and-js.md](/reference/go-and-js/)).
+
+### Tools
+
+- `goesm emit-ts -dts` also writes a declaration file of each built package's exports, `<package>.d.ts`, which imports no other file ([docs/js-exports.md](/reference/js-exports/#typescript)).
+- The warning about functions goesm cannot lower yet lists only those that code reachable from the program's roots may call, and names them without `-v`, which adds each one's position and reason. A program printing with `fmt` was warned about 19 functions of `internal/abi` and `internal/bytealg` it never calls.
+
+### regexp
+
+- A constant pattern is matched with the engine's `RegExp` also when a search by backtracking can take time quadratic in the input, instead of only linear: a pattern that can start anywhere and rescans, such as `\d+x` or `(\w+)@(\w+)`, and one that tries each split of a run once, such as `^(\S+)\s+(.*)$` or `unicode-range:\s*([^;]+);`. A program whose patterns are all of this kind no longer keeps Go's parser and engines, about 55 KB gzip. Patterns that can take longer, such as `(a+)+b` or `\d+\d+$`, still keep them. The Image app of richinosan/toolbox, with its 14 patterns compiled by `regexp.MustCompile` instead of its own wrapper of JS `RegExp`, goes from 120.0 KB to 81.9 KB gzip (79.2 KB with the wrapper).
+
+### Bundle size
+
+- A string constant with non-ASCII text, such as Japanese, is a JS string literal of that text, converted to Go's bytes once when the module loads, instead of a `\x` escape per byte. A string that a `syscall/js` call takes is the text itself, with no conversion. `goesm build` writes such text as UTF-8 instead of `\u` escapes. A package of 300 Japanese messages went from 62.0 KB to 27.5 KB minified, and from 8.1 KB to 7.5 KB gzip.
+- A `//goesm:import` function that returns `js.Value` wraps the value directly, instead of going through the converter of JS values to Go values, which a program that imports only such functions no longer keeps.
+- `syscall` gets the host's `fs`, `process` and `path` from the runtime once, and `js.Value.Get` is a plain property read. Before, every `Get` checked for those three names.
+- `time` keeps the parser of a time zone's rule string (the TZ string after the last transition) only when the program loads time zone data, such as with `time.LoadLocation`.
+- A call of `strconv.FormatFloat` or `AppendFloat` with bitSize 64 and a constant format `'e'`, `'E'`, `'f'`, `'g'` or `'G'`, and of `strconv.ParseFloat` with bitSize 64, converts with the engine's number formatting and parsing, giving Go's results (checked against Go on about 17,000 cases). A program that converts only such floats no longer keeps `strconv`'s float conversions and their tables, about 25 KB minified.
+- `fmt.Print`, `Println` and `Printf`, and `Fprint`, `Fprintln` and `Fprintf` to `os.Stdout` or `os.Stderr`, write the formatted string to the host's standard output or error directly when the program never assigns those variables, takes their address or closes them, instead of through `*os.File`, `internal/poll` and `syscall`'s file table. `Println` and `Print` of strings, booleans and numbers of the predeclared types are concatenated as `Sprintf` is. A package that calls `fmt.Println("n =", n)` goes from 49.4 KB to 30.7 KB gzip.
+- `strings.Replacer` is one JS `RegExp` of its old strings, with Go's order of matching, including empty old strings. A program that uses it no longer keeps Go's trie and byte replacers.
+
+With these, the Image app of richinosan/toolbox went from 92.1 KB to 79.3 KB gzip and the Calendar app from 31.5 KB to 30.4 KB.
 
 ## v0.0.1-beta.7
 

@@ -46,7 +46,7 @@ gosfc の目的は「Go 風のフロントエンド言語を作ること」で�
 * gosfc は goesm を CLI（`go tool goesm emit-ts -overlay ...`）経由でのみ呼びます。goesm の Go パッケージは `internal/` なのでインポートしません。
 * 境界は `packages/vite/src/goesm.js` の 1 ファイルだけです。goesm の呼び方を変えるときはここだけを変更してください。
 * goesm 側の変更が必要な場合は [goesm](https://github.com/goesm-dev/goesm) にプルリクエストを出してください。goesm に Vue や SFC の知識を入れず、汎用的な機能（例：`-overlay`）として提案します。
-* goesm はリリース（`v0.0.1-beta.N`）で固定します。新しいリリースが出たら、`examples/astro/go.mod`、`tests/fixtures/app/go.mod`、`bench/go.mod` で `go get -tool github.com/goesm-dev/goesm/cmd/goesm@<version>` を実行します。
+* goesm はリリース（`v0.0.1-beta.N`）で固定します。新しいリリースが出たら、`examples/astro/go.mod`、`examples/astro-go/go.mod`、`tests/fixtures/app/go.mod`、`bench/go.mod` で `go get -tool github.com/goesm-dev/goesm/cmd/goesm@<version>` を実行します。
 
 ## 開発環境
 
@@ -87,4 +87,4 @@ pnpm dev
 
 ## ライセンス
 
-gosfc は [MIT License](https://github.com/goesm-dev/gosfc/tree/v0.0.1-beta.4/LICENSE) で公開されています。コントリビューションは同じ MIT License の下で提供されたものとして扱います。npm パッケージにも同梱するため、`packages/vite/LICENSE` と `packages/astro/LICENSE` はルートの `LICENSE` の写しにしています。
+gosfc は [MIT License](https://github.com/goesm-dev/gosfc/tree/v0.0.1-beta.7/LICENSE) で公開されています。コントリビューションは同じ MIT License の下で提供されたものとして扱います。npm パッケージにも同梱するため、`packages/vite/LICENSE` と `packages/astro/LICENSE` はルートの `LICENSE` の写しにしています。

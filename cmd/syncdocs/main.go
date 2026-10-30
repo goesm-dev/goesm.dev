@@ -91,6 +91,7 @@ func main() {
 				"docs/js-imports.md":          "/reference/js-imports/",
 				"docs/js-exports.md":          "/reference/js-exports/",
 				"docs/dom.md":                 "/reference/dom/",
+				"docs/go-and-js.md":           "/reference/go-and-js/",
 				"compare/README.md":           "/reference/compare/",
 				"docs/concurrency.md":         "/reference/concurrency/",
 				"docs/use-cases.md":           "/reference/use-cases/",

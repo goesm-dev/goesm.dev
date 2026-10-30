@@ -1,6 +1,6 @@
 <!-- Synced by cmd/syncdocs. Edit the source instead. -->
 
-同じコンポーネントを `<script setup lang="go">` と `<script setup lang="ts">` で書いて比べています（[bench/](https://github.com/goesm-dev/gosfc/tree/v0.0.1-beta.4/bench)）。どちらも Vite 8 と `@vitejs/plugin-vue` でビルドし、Go 側は前に `@gosfc/vite` を置く以外は同じ設定です。
+同じコンポーネントを `<script setup lang="go">` と `<script setup lang="ts">` で書いて比べています（[bench/](https://github.com/goesm-dev/gosfc/tree/v0.0.1-beta.7/bench)）。どちらも Vite 8 と `@vitejs/plugin-vue` でビルドし、Go 側は前に `@gosfc/vite` を置く以外は同じ設定です。
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="/repo/gosfc/bench/results-dark.svg">

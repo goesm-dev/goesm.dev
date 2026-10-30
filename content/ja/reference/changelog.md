@@ -11,7 +11,46 @@ goesm の各バージョンの変更点を、新しい順に記載します。�
 
 ## Unreleased
 
-v0.0.1-beta.7 以降に `main` に入った変更です。差分は [v0.0.1-beta.7...main](https://github.com/goesm-dev/goesm/compare/v0.0.1-beta.7...main) で確認できます。
+v0.0.1-beta.8 以降に `main` に入った変更です。差分は [v0.0.1-beta.8...main](https://github.com/goesm-dev/goesm/compare/v0.0.1-beta.8...main) で確認できます。
+
+## v0.0.1-beta.8
+
+2026-10-21 にタグを付けました。v0.0.1-beta.7 からの差分は [v0.0.1-beta.7...v0.0.1-beta.8](https://github.com/goesm-dev/goesm/compare/v0.0.1-beta.7...v0.0.1-beta.8) で確認できます。
+
+### JS calling ABI
+
+- `//goesm:import` の関数には `{ panic("goesm:import") }` のような本体を書けるようになりました。goesm はその本体を取り込んだ関数に置き換えます。空のアセンブリファイルがなくても、`go build` と `go vet` がパッケージを受け付けます。
+- 別のパッケージの struct 型へのポインタを引数に取る関数を export し、その型のメソッドが同じ型へのポインタを返す場合、entry はその型に JS のメソッドを 2 回付けていたため、esbuild が「The symbol ... has already been declared」で拒否していました。1 回だけ付けるようになりました。
+- `//goesm:import "<モジュール>" <エクスポート名> lazy` は、関数を最初に呼んだ時点で動的な `import()` によってモジュールを読み込みます。バンドラーはそのモジュールを別のチャンクに分けます。関数は `await` の import と同じくブロックします ([docs/js-imports.ja.md](/ja/reference/js-imports/#ディレクティブ))。
+- Go から JavaScript に渡す nil のスライスとマップは、`null` ではなく空の配列、`Uint8Array`、オブジェクト、`Map` になりました。対象は、export した関数の戻り値と `//goesm:import` の関数の引数です。JavaScript のコードが返す値と同じ形であり、戻り値の型からも `| null` がなくなりました。JavaScript からは、これまでどおり `null` も渡せます。
+- `js` の struct タグで、JavaScript でのフィールド名を `json` タグより優先して指定できるようになりました。`` ID int `json:"id" js:"ID"` `` は JavaScript では `ID` になり、`js:"-"` を付けたフィールドは JavaScript に渡りません。
+
+### syscall/js
+
+- `Get`、`Index`、`Length`、`Call` は、真偽値、数値、文字列に対して panic せず、JavaScript のプロパティアクセスと同じように動くようになりました (`js.ValueOf("abc").Length()` は 3)。`undefined` と `null` に対しては、これまでどおり `*js.ValueError` で panic します。
+- Promise を待つパッケージ `github.com/goesm-dev/goesm/promise` を追加しました。`promise.Await(p)` は Promise の値を返し、拒否された場合は拒否の理由を `js.Error` として返します。そのため、`errors.As` で `AbortError` を取り出せます。goesm はこの関数を `await` に変換し、Go の WebAssembly 版では `then` のコールバックで待ちます ([docs/dom.ja.md](/ja/reference/dom/#promise))。
+- パッケージ `github.com/goesm-dev/goesm/jscompat` を追加しました。Go と JavaScript で振る舞いが違う処理について、Go のコードに JavaScript と同じ振る舞いを提供します。JavaScript の構文 (先読み、後読み、後方参照) のパターンを扱う `RegExp`、`Normalize` (NFC、NFD、NFKC、NFKD)、`Math.round` と同じく丸める `Round`、エンジンの `Cos`、`Sin` などの `Math` の関数、`selectionStart` などの UTF-16 の位置を変換する `UTF16Offset`、`ByteOffset`、`UTF16Len` があります ([docs/go-and-js.ja.md](/ja/reference/go-and-js/))。
+
+### ツール
+
+- `goesm emit-ts -dts` は、ビルドしたパッケージのエクスポートの宣言ファイル `<パッケージ>.d.ts` も書き出します。このファイルはほかのファイルを import しません ([docs/js-exports.ja.md](/ja/reference/js-exports/#typescript))。
+- goesm がまだ変換できない関数の警告は、プログラムの起点から到達できるコードが呼び得る関数だけを数え、`-v` なしでも名前を表示するようになりました。`-v` を付けると、それぞれの位置と理由も表示します。これまでは `fmt` で出力するプログラムに対して、呼ばれることのない `internal/abi` と `internal/bytealg` の 19 個の関数について警告していました。
+
+### regexp
+
+- 定数のパターンは、バックトラックによる検索に入力の長さの 2 乗に比例する時間がかかり得る場合も、線形時間の場合と同じく engine の `RegExp` で照合するようになりました。`\d+x` や `(\w+)@(\w+)` のようにどこからでも始まり同じ範囲を走査し直すパターンと、`^(\S+)\s+(.*)$` や `unicode-range:\s*([^;]+);` のように並びの分け方を 1 回ずつ試すパターンが該当します。こうしたパターンだけを使うプログラムには、Go の parser とエンジン (gzip 後約 55 KB) が残らなくなりました。`(a+)+b` や `\d+\d+$` のようにさらに時間がかかり得るパターンでは、これまでどおり残ります。richinosan/toolbox の Image アプリで、独自の JS `RegExp` の wrapper の代わりに 14 個のパターンを `regexp.MustCompile` でコンパイルすると、gzip 後の大きさは 120.0 KB から 81.9 KB になります (wrapper では 79.2 KB)。
+
+### バンドルサイズ
+
+- 日本語など ASCII 以外の文字を含む文字列定数は、1 バイトごとの `\x` エスケープではなく、その文字列の JS の文字列 literal になりました。Go のバイト列への変換は module を読み込むときに 1 回だけ行います。`syscall/js` の呼び出しに渡す文字列は変換せずにそのまま渡します。`goesm build` はこうした文字を `\u` エスケープではなく UTF-8 で書き出します。日本語のメッセージを 300 件持つパッケージは、minify 後 62.0 KB から 27.5 KB に、gzip 後 8.1 KB から 7.5 KB になりました。
+- `js.Value` を返す `//goesm:import` 関数は、JS の値を Go の値に変換する converter を通さずに値を直接包むようになりました。そうした関数だけを import するプログラムに converter が残らなくなりました。
+- `syscall` は host の `fs`、`process`、`path` を runtime から 1 回だけ受け取り、`js.Value.Get` は単なるプロパティの読み出しになりました。これまでは `Get` のたびにこの 3 つの名前を確認していました。
+- `time` は、`time.LoadLocation` などでタイムゾーンのデータを読み込むプログラムにだけ、タイムゾーンの規則の文字列 (最後の遷移より後の TZ 文字列) の parser を残すようになりました。
+- bitSize が 64 で書式が定数の `'e'`、`'E'`、`'f'`、`'g'`、`'G'` である `strconv.FormatFloat` と `AppendFloat` の呼び出し、および bitSize が 64 の `strconv.ParseFloat` の呼び出しは、engine の数値の書式化と解析で変換し、Go と同じ結果を返すようになりました (約 17,000 件で Go と比較しました)。こうした float だけを変換するプログラムに、`strconv` の float 変換とその表 (minify 後約 25 KB) が残らなくなりました。
+- `fmt.Print`、`Println`、`Printf` と、`os.Stdout` か `os.Stderr` に書く `Fprint`、`Fprintln`、`Fprintf` は、プログラムがこれらの変数に代入せず、アドレスも取らず、閉じもしない場合、`*os.File`、`internal/poll`、`syscall` のファイルの表を通さずに、書式化した文字列を host の標準出力か標準エラーに直接書くようになりました。文字列、bool、事前宣言された型の数値の `Println` と `Print` は、`Sprintf` と同じく文字列の連結になります。`fmt.Println("n =", n)` を呼ぶパッケージは gzip 後 49.4 KB から 30.7 KB になりました。
+- `strings.Replacer` は、古い文字列を並べた 1 つの JS の `RegExp` になりました。空の古い文字列を含め、照合の順序は Go と同じです。これを使うプログラムに Go の trie と byte の replacer が残らなくなりました。
+
+これらにより、richinosan/toolbox の Image アプリは gzip 後 92.1 KB から 79.3 KB に、Calendar アプリは 31.5 KB から 30.4 KB になりました。
 
 ## v0.0.1-beta.7
 

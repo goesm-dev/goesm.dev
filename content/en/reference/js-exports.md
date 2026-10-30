@@ -146,4 +146,4 @@ A result that is a slice or a map is typed without `null`, since a nil one is em
 
 ## Performance
 
-A call with numbers costs what a call to a JavaScript function costs: the export passes them as they are. A string is converted from UTF-16 to UTF-8 on the way in and back on the way out; an ASCII string is passed unchanged after a scan. Slices, maps and structs are copied element by element. The calling kernels of [bench](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.8/bench) measure the cost: `Add`, `Upper` and `Handle` call Go with numbers and strings 100,000 or 10,000 times.
+A call with numbers costs what a call to a JavaScript function costs: the export passes them as they are. A string is converted from UTF-16 to UTF-8 on the way in and back on the way out; an ASCII string is passed unchanged after a scan. Slices, maps and structs are copied element by element. The calling kernels of [bench](https://github.com/goesm-dev/goesm/tree/v0.0.1-beta.9/bench) measure the cost: `Add`, `Upper` and `Handle` call Go with numbers and strings 100,000 or 10,000 times.

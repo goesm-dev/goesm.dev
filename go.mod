@@ -11,7 +11,7 @@ require github.com/yuin/goldmark v1.8.6
 
 require (
 	github.com/evanw/esbuild v0.28.2 // indirect
-	github.com/goesm-dev/goesm v0.0.1-beta.8 // indirect
+	github.com/goesm-dev/goesm v0.0.1-beta.9 // indirect
 	github.com/goesm-dev/gosfc v0.0.1-beta.7 // indirect
 	golang.org/x/mod v0.41.0 // indirect
 	golang.org/x/sync v0.23.0 // indirect

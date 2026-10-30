@@ -11,7 +11,33 @@ goesm の各バージョンの変更点を、新しい順に記載します。�
 
 ## Unreleased
 
-v0.0.1-beta.8 以降に `main` に入った変更です。差分は [v0.0.1-beta.8...main](https://github.com/goesm-dev/goesm/compare/v0.0.1-beta.8...main) で確認できます。
+v0.0.1-beta.9 以降に `main` に入った変更です。差分は [v0.0.1-beta.9...main](https://github.com/goesm-dev/goesm/compare/v0.0.1-beta.9...main) で確認できます。
+
+## v0.0.1-beta.9
+
+2026-10-30 にタグを付けました。v0.0.1-beta.8 からの差分は [v0.0.1-beta.8...v0.0.1-beta.9](https://github.com/goesm-dev/goesm/compare/v0.0.1-beta.8...v0.0.1-beta.9) で確認できます。
+
+### バンドルサイズ
+
+- connect-go で Connect のサービスを 1 つ提供する Cloudflare Worker のバンドルは、minify 後 4.5 MB (gzip で 1.18 MB) から 1.9 MB (gzip で 457 KB) になりました。Node での import は 570 ms から 210 ms に、unary 呼び出しの応答は 340 µs から 215 µs になりました (`testdata/usecases/worker`、`TestUseCaseWorker`)。
+  - 変数の計算以外に効果を持たないパッケージ変数の初期化式と `init` 関数は、到達可能なコードがその変数を使わなければ出力しません。net/http の TLS の既定値、crypto/tls の表、nistec の P-256 の表、x/text の正規化の表が、TLS、X.509、楕円曲線を残していました。
+  - FIPS 140 mode でだけ実行する `crypto/internal/fips140` の自己テストが、それを渡す `init` 関数を通じてハッシュ、AES、鍵導出を残すことはなくなりました。
+  - 到達可能なコードの起点は entry パッケージだけになりました。モジュールのほかのパッケージは entry が使う部分だけを数えるので、サーバーは生成された connect-go のパッケージのクライアントと net/http のクライアントを含みません。
+  - 引数が定数の reflection の `MethodByName` は、interface の値に格納される型のその名前のメソッドだけを残すようになりました。Go のリンカーと同じ扱いです。protobuf の descriptor の整形が `Get` を呼ぶため、`http.Client.Get` が残っていました。
+- 同じ Worker のバンドルは、minify 後 1.70 MB (gzip で 413 KB) になりました。
+  - `fetchHandler` だけでリクエストを処理するプログラムは、`*http.Server` を interface の値に格納しなくなりました。その型記述子が、reflection のために crypto/tls、crypto/x509、math/big を残していました。
+  - 到達可能なコードが interface の値に格納しない型のメソッド表は空になりました。型アサーション、interface 経由の呼び出し、reflection のいずれもその表を参照しません。メソッドのシグネチャが、そこに現れる型を残していました。
+  - 埋め込みによるメソッドを持つ名前のない struct 型のメソッド表は、副作用のない初期化式の中で設定するようになりました。その型を使うコードがなければ、バンドラーは型とメソッドをまとめて削除します。encoding/json/v2 の `Marshaler` などのラッパーが常に残っていました。
+  - `var x, _ = f()` の形の初期化式も、`x` の計算以外に効果を持たず、到達可能なコードが `x` を使わなければ、値が 1 つの初期化式と同じく出力しません。edwards25519 の基点が残っていました。
+- 同じ Worker のバンドルは、minify 後 1.52 MB (gzip で 369 KB) になりました。runtime が自身で処理しない値の `encoding/json` の `Marshal` と `Unmarshal` は、encoding/json 自身の実装 (`GOEXPERIMENT=nojsonv2`) の encoder と decoder で処理するようになりました。Go 1.27 の既定である json v2 を v1 の option で使った場合と同じ結果を返すよう変えてあり、エラー、途中までの結果、map の key、struct tag の名前、出力が一致します。json v2、jsontext とその表は出力しません (Worker の JSON のコードは約 190 KB から 47 KB になりました)。ただし、json v2 だけが呼ぶ `MarshalJSONTo` か `UnmarshalJSONFrom` という名前のメソッドを宣言するプログラムは json v2 を使います。`testdata/programs/jsonlegacy` が 5,000 件のランダムな例で native Go と比べます。
+
+### 修正
+
+- 名前のない struct 型の `reflect.Type` の `String` は、Go と同じく field の tag を表示するようになりました (`struct { F int "json:\"f\"" }`)。空の struct では `struct {}` です。
+
+### ブロッキング解析
+
+- entry から到達可能なコードについて、block するかどうかを判定し直すようになりました。実行されないコードが他のコードを async にすることはありません。この Worker では、connect-go と net/http のクライアントが使う `io.Pipe` のために `io.Reader` の `Read` が block し、protobuf の `Format` メソッドを通じてすべての `fmt.Sprintf` と `fmt.Errorf` が async になっていました。
 
 ## v0.0.1-beta.8
 

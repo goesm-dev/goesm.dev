@@ -3,3 +3,8 @@ dist/
 .astro/
 .cloudflare/
 .wrangler/
+
+.env
+.env.*
+.env*.local
+.envrc.local

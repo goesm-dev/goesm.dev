@@ -47,6 +47,12 @@ jobs:
           GOARCH: wasm
       - run: go test ./...
       # Synced docs match the goesm and gosfc versions in go.mod.
+      # go.mod selects gosfc by tag. checkout initializes the submodule at
+      # the gitlink with fetch-depth 1 and does not download tags, so
+      # `git show <tag>:` cannot resolve that revision until the tags are
+      # fetched. The tagged commit is already the gitlink; this only adds
+      # the ref.
+      - run: git -C third_party/gosfc fetch --tags --force origin
       - run: go run ./cmd/syncdocs -check -goesm _ci/goesm -gosfc third_party/gosfc
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
